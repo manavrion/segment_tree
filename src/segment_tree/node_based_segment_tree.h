@@ -13,7 +13,7 @@ namespace manavrion {
 
 template <typename T, typename Functor = details::default_min<T>,
           typename Reducer = Functor>
-class segment_tree {
+class node_based_segment_tree {
   static_assert(std::is_invocable_v<Functor, T, T>);
   using functor_result = std::decay_t<std::invoke_result_t<Functor, T, T>>;
   static_assert(std::is_invocable_v<Reducer, functor_result, functor_result>);
@@ -26,13 +26,13 @@ class segment_tree {
   using node_type = functor_result;
 
  public:
-  segment_tree() {}
+  node_based_segment_tree() {}
 
  private:
   Functor functor_;
   Reducer reducer_;
   std::vector<value_type> data_;
-  std::vector<node_type> nodes_;
+  // node
 };
 
 }  // namespace manavrion
