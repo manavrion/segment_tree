@@ -11,28 +11,28 @@
 
 namespace manavrion {
 
-template <typename T, typename Functor = details::default_min<T>,
-          typename Reducer = Functor>
+template <typename T, typename Mapper = details::default_mapper<T>,
+          typename Reducer = details::default_reducer<T>>
 class segment_tree {
-  static_assert(std::is_invocable_v<Functor, T, T>);
-  using functor_result = std::decay_t<std::invoke_result_t<Functor, T, T>>;
-  static_assert(std::is_invocable_v<Reducer, functor_result, functor_result>);
+  static_assert(std::is_invocable_v<Mapper, T>);
+  using mapper_result = std::decay_t<std::invoke_result_t<Mapper, T>>;
+  static_assert(std::is_invocable_v<Reducer, mapper_result, mapper_result>);
   static_assert(std::is_convertible_v<
-                std::invoke_result_t<Reducer, functor_result, functor_result>,
-                functor_result>);
+                std::invoke_result_t<Reducer, mapper_result, mapper_result>,
+                mapper_result>);
 
  public:
   using value_type = T;
-  using node_type = functor_result;
+  using node_value_type = mapper_result;
 
  public:
   segment_tree() {}
 
  private:
-  Functor functor_;
+  Mapper mapper_;
   Reducer reducer_;
   std::vector<value_type> data_;
-  std::vector<node_type> nodes_;
+  std::vector<node_value_type> nodes_;
 };
 
 }  // namespace manavrion

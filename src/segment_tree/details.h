@@ -9,9 +9,26 @@
 namespace manavrion::details {
 
 template <typename T>
-struct default_min {
-  decltype(auto) operator()(const T& lhs, const T& rhs) const noexcept {
-    return std::min(lhs, rhs);
+struct default_reduce_result_t {
+  T min;
+  T max;
+  T sum;
+};
+
+template <typename T>
+struct default_mapper {
+  auto operator()(const T& t) const noexcept {
+    return default_reduce_result_t<T>{t, t, t};
+  }
+};
+
+template <typename T>
+struct default_reducer {
+  auto operator()(const default_reduce_result_t<T>& lhs,
+                  const default_reduce_result_t<T>& rhs) const noexcept {
+    return default_reduce_result_t<T>{std::min(lhs.min, rhs.min),
+                                      std::max(lhs.max, rhs.max),
+                                      lhs.sum + rhs.sum};
   }
 };
 
