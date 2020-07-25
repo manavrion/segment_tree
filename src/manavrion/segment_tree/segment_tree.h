@@ -7,9 +7,9 @@
 #include <type_traits>
 #include <vector>
 
-#include "details.h"
+#include "functors.h"
 
-namespace manavrion {
+namespace manavrion::segment_tree {
 
 template <typename T, typename Mapper = details::default_mapper<T>,
           typename Reducer = details::default_reducer<T>>
@@ -35,4 +35,4 @@ class segment_tree {
   std::vector<node_value_type> nodes_;
 };
 
-}  // namespace manavrion
+}  // namespace manavrion::segment_tree

@@ -13,12 +13,13 @@ struct default_reduce_result_t {
   T min;
   T max;
   T sum;
+  T mul;
 };
 
 template <typename T>
 struct default_mapper {
   auto operator()(const T& t) const noexcept {
-    return default_reduce_result_t<T>{t, t, t};
+    return default_reduce_result_t<T>{t, t, t, t};
   }
 };
 
@@ -28,7 +29,7 @@ struct default_reducer {
                   const default_reduce_result_t<T>& rhs) const noexcept {
     return default_reduce_result_t<T>{std::min(lhs.min, rhs.min),
                                       std::max(lhs.max, rhs.max),
-                                      lhs.sum + rhs.sum};
+                                      lhs.sum + rhs.sum, lhs.sum * rhs.sum};
   }
 };
 

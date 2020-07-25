@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include "segment_tree/node_based_segment_tree.h"
-#include "segment_tree/segment_tree.h"
+#include "manavrion/segment_tree/node_based_segment_tree.h"
+#include "manavrion/segment_tree/segment_tree.h"
 
-using namespace manavrion;
+using namespace manavrion::segment_tree;
 
 TEST(SimpleTest, Test) {
   segment_tree<int> st1;
