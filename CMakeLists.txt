@@ -16,12 +16,6 @@ enable_testing()
 # Google benchmark
 include(gbenchmark)
 
-# range-v3
-include(rangev3)
-
-# boost
-include(boost)
-
 # The code uses the root folder to #include
 include_directories("src/")
 

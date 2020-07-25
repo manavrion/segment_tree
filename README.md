@@ -1,9 +1,9 @@
-# template_repository
-Just template.
+# segment_tree
+A generic segment tree C++ header-only library.
 
 # How to build
 
-1. git clone git@github.com:manavrion/template_repository.git
+1. git clone git@github.com:manavrion/segment_tree.git
 2. ./build.sh
 
 ## Clang compiler
@@ -15,27 +15,3 @@ Just template.
 # How to test
 
 1. ./test.sh
-
-# Recomended tools
-
-## IDE: VS Code with plugins:
-
-### C++
-
-C/C++ - ms-vscode.cpptools
-
-Clang-Format - xaver.clang-format
-
-### CMake
-
-CMake - twxs.cmake
-
-CMake Tools - ms-vscode.cmake-tools
-
-cmake-format - cheshirekow.cmake-format
-
-### Other
-
-Code Spell Checker - streetsidesoftware.code-spell-checker
-
-Markdown All in One - yzhang.markdown-all-in-one
