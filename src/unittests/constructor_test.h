@@ -47,7 +47,7 @@ void ConstructorTest() {
 }
 
 template <template <typename, typename, typename> typename S>
-void AssignOperatorTest() {
+void OperatorAssignTest() {
   using namespace manavrion::segment_tree::functors;
   using SegmentTree = S<int, default_reducer, default_mapper>;
   const std::array numbers = {0, 1, 2};
@@ -57,4 +57,16 @@ void AssignOperatorTest() {
   segment_tree = other_tree;
   segment_tree = std::move(other_tree);
   segment_tree = {0, 1, 2};
+}
+
+template <template <typename, typename, typename> typename S>
+void AssignTest() {
+  using namespace manavrion::segment_tree::functors;
+  using SegmentTree = S<int, default_reducer, default_mapper>;
+  const std::array numbers = {0, 1, 2};
+  SegmentTree segment_tree = {0, 1, 2};
+
+  segment_tree.assign(10, 123);
+  segment_tree.assign(numbers.begin(), numbers.end());
+  segment_tree.assign({0, 1, 2});
 }

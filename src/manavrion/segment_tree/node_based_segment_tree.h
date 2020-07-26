@@ -106,8 +106,11 @@ class node_based_segment_tree {
     auto childs() { return std::array<node_t*, 2>{left_.get(), right_.get()}; }
   };
 
-  // Creation of segment tree nodes, time complexity - O(n).
-  void init() {
+  // Creates segment tree nodes, time complexity - O(n).
+  void build_tree() {
+    assert(tails_.empty());
+    assert(!head_);
+
     const size_t tail_size = data_.size() / 2 + bool(data_.size() % 2);
     std::vector<std::unique_ptr<node_t>> line;
     line.reserve(tail_size);
@@ -161,22 +164,24 @@ class node_based_segment_tree {
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
         data_(first, last, allocator) {
-    init();
+    build_tree();
   }
 
+  // Time complexity - O(n).
   template <typename InputIt>
   node_based_segment_tree(InputIt first, InputIt last,
                           const Allocator& allocator)
       : data_(first, last, allocator) {
-    init();
+    build_tree();
   }
 
+  // Time complexity - O(n).
   node_based_segment_tree(const node_based_segment_tree& other,
                           const Allocator& allocator = {})
       : reducer_(other.reducer_),
         mapper_(other.mapper_),
         data_(other.data_, allocator) {
-    init();
+    build_tree();
   }
 
   node_based_segment_tree(node_based_segment_tree&& other,
@@ -187,24 +192,28 @@ class node_based_segment_tree {
         head_(std::move(other.head_)),
         tails_(std::move(other.tails_)) {}
 
+  // Time complexity - O(n).
   node_based_segment_tree(std::initializer_list<T> init_list,
                           Reducer reducer = {}, Mapper mapper = {},
                           const Allocator& alloc = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
         data_(init_list, alloc) {
-    init();
+    build_tree();
   }
 
+  // Time complexity - O(n).
   node_based_segment_tree(std::initializer_list<T> init_list,
                           const Allocator& alloc)
       : data_(init_list, alloc) {
-    init();
+    build_tree();
   }
 
+  // Time complexity - O(n).
   node_based_segment_tree& operator=(const node_based_segment_tree& other) {
     data_ = other.data_;
-    init();
+    build_tree();
+    return *this;
   }
 
   node_based_segment_tree& operator=(node_based_segment_tree&& other) noexcept {
@@ -213,12 +222,34 @@ class node_based_segment_tree {
     data_ = std::move(other.data_);
     head_ = std::move(other.head_);
     tails_ = std::move(other.tails_);
+    return *this;
   }
 
+  // Time complexity - O(n).
   node_based_segment_tree& operator=(std::initializer_list<T> init_list) {
+    clear();
     data_ = init_list;
-    init();
+    build_tree();
+    return *this;
   }
+
+  // Time complexity - O(n). Can be reduced to O(1) with dynamic_segment_tree.
+  void assign(size_type count, const T& value) {
+    clear();
+    data_.assign(count, value);
+    build_tree();
+  }
+
+  // Time complexity - O(n).
+  template <class InputIt>
+  void assign(InputIt first, InputIt last) {
+    clear();
+    data_.assign(first, last);
+    build_tree();
+  }
+
+  // Time complexity - O(n).
+  void assign(std::initializer_list<T> init_list) { operator=(init_list); }
 
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).

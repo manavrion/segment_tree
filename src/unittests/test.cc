@@ -24,6 +24,8 @@ void TestSimpleSegmentTree() {
   SimpleFunctorTest<SegmentTree>();
   ComplicatedFunctorTest<SegmentTree>();
   ConstructorTest<SegmentTree>();
+  OperatorAssignTest<SegmentTree>();
+  AssignTest<SegmentTree>();
 }
 
 TEST(NodeBasedSegmentTree, Test) {
