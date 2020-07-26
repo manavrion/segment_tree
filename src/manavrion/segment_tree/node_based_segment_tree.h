@@ -27,14 +27,32 @@ class node_based_segment_tree {
                 std::invoke_result_t<Reducer, mapper_result, mapper_result>,
                 mapper_result>);
 
+  using container_type = std::vector<Allocator>;
+
  public:
   using value_type = T;
-  using node_value_type = mapper_result;
+  using allocator_type = Allocator;
+  using size_type = typename container_type::size_type;
+  using difference_type = typename container_type::difference_type;
+  using reference = typename container_type::reference;
+  using const_reference = typename container_type::const_reference;
+  using pointer = typename container_type::pointer;
+  using const_pointer = typename container_type::const_pointer;
+  using iterator = typename container_type::iterator;
+  using const_iterator = typename container_type::const_iterator;
+  using reverse_iterator = typename container_type::reverse_iterator;
+  using const_reverse_iterator =
+      typename container_type::const_reverse_iterator;
+
+  // segment_tree specific.
+  using reduced_type = mapper_result;
+  using mapper_type = Mapper;
+  using reducer_type = Reducer;
 
  private:
   struct node_t {
    public:
-    node_value_type value;
+    reduced_type value;
 
    private:
     size_t first_index_;
@@ -44,7 +62,7 @@ class node_based_segment_tree {
     std::unique_ptr<node_t> right_;
 
    public:
-    node_t(node_value_type value, size_t first_index, size_t last_index)
+    node_t(reduced_type value, size_t first_index, size_t last_index)
         : value(std::move(value)),
           first_index_(first_index),
           last_index_(last_index) {
@@ -95,6 +113,9 @@ class node_based_segment_tree {
   node_based_segment_tree(node_based_segment_tree&&) = default;
   node_based_segment_tree& operator=(node_based_segment_tree&&) = default;
 
+  explicit node_based_segment_tree(const Allocator& allocator)
+      : data_(allocator) {}
+
   // Creation of segment tree nodes,
   // Time complexity - O(n).
   template <typename InputIt>
@@ -139,14 +160,14 @@ class node_based_segment_tree {
 
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).
-  [[nodiscard]] node_value_type query(size_t first_index,
-                                      size_t last_index) const {
+  [[nodiscard]] reduced_type query(size_t first_index,
+                                   size_t last_index) const {
     assert(head_);
     assert(first_index <= last_index);
     assert(last_index <= data_.size());
     //
     const size_t max_size = 4;
-    std::vector<node_value_type> results;
+    std::vector<reduced_type> results;
     std::vector<node_t*> q;
     results.reserve(max_size);
     q.reserve(max_size);
@@ -180,7 +201,7 @@ class node_based_segment_tree {
       }
     }
     assert(!results.empty());
-    node_value_type result = std::move(results.back());
+    reduced_type result = std::move(results.back());
     results.pop_back();
     for (auto& node : results) {
       result = reducer_(std::move(result), std::move(node));
@@ -233,7 +254,7 @@ class node_based_segment_tree {
  private:
   Mapper mapper_;
   Reducer reducer_;
-  std::vector<value_type, Allocator> data_;
+  std::vector<T, Allocator> data_;
 
   std::unique_ptr<node_t> head_;
   std::vector<node_t*> tails_;
