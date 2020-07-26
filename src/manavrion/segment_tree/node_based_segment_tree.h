@@ -17,7 +17,8 @@
 namespace manavrion::segment_tree {
 
 template <typename T, typename Reducer = functors::default_reducer,
-          typename Mapper = functors::deduce_mapper<T, Reducer>>
+          typename Mapper = functors::deduce_mapper<T, Reducer>,
+          typename Allocator = std::allocator<T>>
 class node_based_segment_tree {
   static_assert(std::is_invocable_v<Mapper, T>);
   using mapper_result = std::decay_t<std::invoke_result_t<Mapper, T>>;
@@ -214,18 +215,25 @@ class node_based_segment_tree {
     }
   }
 
-  [[nodiscard]] bool empty() const { return data_.empty(); }
+  [[nodiscard]] bool empty() const {
+    if (data_.empty()) {
+      assert(!head_);
+      assert(tails_.empty());
+    }
+    return data_.empty();
+  }
 
   void clear() {
     data_.clear();
     head_.reset();
     tails_.clear();
+    assert(empty());
   }
 
  private:
   Mapper mapper_;
   Reducer reducer_;
-  std::vector<value_type> data_;
+  std::vector<value_type, Allocator> data_;
 
   std::unique_ptr<node_t> head_;
   std::vector<node_t*> tails_;
