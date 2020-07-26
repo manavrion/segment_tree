@@ -72,3 +72,19 @@ void MethodGetAllocatorTest() {
   SegmentTree segment_tree;
   EXPECT_EQ(segment_tree.get_allocator(), std::allocator<int>());
 }
+
+template <typename SegmentTree>
+void MethodAt() {
+  SegmentTree segment_tree = {0, 1, 2};
+  const auto& const_segment_tree = segment_tree;
+  EXPECT_EQ(segment_tree.at(0), 0);
+  EXPECT_EQ(const_segment_tree.at(2), 2);
+}
+
+template <typename SegmentTree>
+void OperatorBraces() {
+  SegmentTree segment_tree = {0, 1, 2};
+  const auto& const_segment_tree = segment_tree;
+  EXPECT_EQ(segment_tree[0], 0);
+  EXPECT_EQ(const_segment_tree[2], 2);
+}

@@ -27,7 +27,7 @@ class node_based_segment_tree {
                 std::invoke_result_t<Reducer, mapper_result, mapper_result>,
                 mapper_result>);
 
-  using container_type = std::vector<Allocator>;
+  using container_type = std::vector<T, Allocator>;
 
  public:
   using value_type = T;
@@ -251,8 +251,18 @@ class node_based_segment_tree {
   // Time complexity - O(n).
   void assign(std::initializer_list<T> init_list) { operator=(init_list); }
 
-  [[nodiscard]] constexpr allocator_type get_allocator() const noexcept {
+  [[nodiscard]] allocator_type get_allocator() const noexcept {
     return data_.get_allocator();
+  }
+
+  [[nodiscard]] reference at(size_type pos) { return data_.at(pos); }
+  [[nodiscard]] const_reference at(size_type pos) const {
+    return data_.at(pos);
+  }
+
+  [[nodiscard]] reference operator[](size_type pos) { return data_[pos]; }
+  [[nodiscard]] const_reference operator[](size_type pos) const {
+    return data_[pos];
   }
 
   // Make a query on [first_index, last_index) segment.
