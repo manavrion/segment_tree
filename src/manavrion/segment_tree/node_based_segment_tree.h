@@ -457,6 +457,36 @@ class node_based_segment_tree {
     update(index);
   }
 
+  template <typename R, typename M, typename A>
+  bool operator==(const node_based_segment_tree<T, R, M, A>& other) const {
+    return data_ == other.data_;
+  }
+
+  template <typename R, typename M, typename A>
+  bool operator!=(const node_based_segment_tree<T, R, M, A>& other) const {
+    return data_ != other.data_;
+  }
+
+  template <typename R, typename M, typename A>
+  bool operator<(const node_based_segment_tree<T, R, M, A>& other) const {
+    return data_ < other.data_;
+  }
+
+  template <typename R, typename M, typename A>
+  bool operator<=(const node_based_segment_tree<T, R, M, A>& other) const {
+    return data_ <= other.data_;
+  }
+
+  template <typename R, typename M, typename A>
+  bool operator>(const node_based_segment_tree<T, R, M, A>& other) const {
+    return data_ > other.data_;
+  }
+
+  template <typename R, typename M, typename A>
+  bool operator>=(const node_based_segment_tree<T, R, M, A>& other) const {
+    return data_ >= other.data_;
+  }
+
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).
   [[nodiscard]] reduced_type query(size_t first_index,
@@ -506,16 +536,6 @@ class node_based_segment_tree {
       result = reducer_(std::move(result), std::move(node));
     }
     return result;
-  }
-
-  template <typename R, typename M, typename A>
-  bool operator==(const node_based_segment_tree<T, R, M, A>& other) const {
-    return data_ == other.data_;
-  }
-
-  template <typename R, typename M, typename A>
-  bool operator!=(const node_based_segment_tree<T, R, M, A>& other) const {
-    return data_ != other.data_;
   }
 
  private:

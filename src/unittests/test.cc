@@ -35,6 +35,8 @@ void TestSimpleSegmentTree() {
   MethodIterators<SegmentTree>();
   MethodCapacity<SegmentTree>();
   MethodModifiers<SegmentTree>();
+  Comparison<SegmentTree>();
+  Specialized<SegmentTree>();
 }
 
 TEST(NodeBasedSegmentTree, Test) {

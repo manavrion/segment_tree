@@ -198,3 +198,25 @@ void MethodModifiers() {
   EXPECT_EQ(segment_tree, SegmentTree({9, 8, 7}));
   EXPECT_EQ(other, SegmentTree(numbers));
 }
+
+template <typename SegmentTree>
+void Comparison() {
+  EXPECT_TRUE(SegmentTree({}) == SegmentTree({}));
+  EXPECT_TRUE(SegmentTree({1, 2}) == SegmentTree({1, 2}));
+  EXPECT_TRUE(SegmentTree({2}) != SegmentTree({1, 2}));
+  EXPECT_TRUE(SegmentTree({1, 2}) < SegmentTree({5}));
+  EXPECT_TRUE(SegmentTree({5}) > SegmentTree({1, 2}));
+  EXPECT_TRUE(SegmentTree({1, 2}) <= SegmentTree({5}));
+  EXPECT_TRUE(SegmentTree({5}) >= SegmentTree({1, 2}));
+  EXPECT_TRUE(SegmentTree({5}) <= SegmentTree({5}));
+  EXPECT_TRUE(SegmentTree({5}) >= SegmentTree({5}));
+}
+
+template <typename SegmentTree>
+void Specialized() {
+  SegmentTree segment_tree = numbers;
+  SegmentTree other = {9, 8, 7};
+  std::swap(segment_tree, other);
+  EXPECT_EQ(segment_tree, SegmentTree({9, 8, 7}));
+  EXPECT_EQ(other, SegmentTree(numbers));
+}
