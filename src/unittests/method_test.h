@@ -138,4 +138,63 @@ void MethodModifiers() {
 
   segment_tree.clear();
   EXPECT_TRUE(segment_tree.empty());
+
+  segment_tree = numbers;
+
+  auto it1 = segment_tree.insert(segment_tree.begin(), -1);
+  EXPECT_EQ(segment_tree.size(), 4);
+  EXPECT_EQ(segment_tree[0], -1);
+  EXPECT_EQ(*it1, -1);
+
+  auto it2 = segment_tree.insert(segment_tree.end(), 3);
+  EXPECT_EQ(segment_tree.size(), 5);
+  EXPECT_EQ(segment_tree[4], 3);
+  EXPECT_EQ(*it2, 3);
+
+  // actual state: {-1, 0, 1, 2, 3}
+  auto it3 = segment_tree.insert(segment_tree.begin(), 2, 0);
+  EXPECT_EQ(segment_tree, SegmentTree({0, 0, -1, 0, 1, 2, 3}));
+  EXPECT_EQ(it3, segment_tree.begin());
+
+  segment_tree = numbers;
+
+  auto it4 = segment_tree.insert(std::next(segment_tree.begin()),
+                                 numbers.begin(), numbers.end());
+  EXPECT_EQ(segment_tree, SegmentTree({0, 0, 1, 2, 1, 2}));
+  EXPECT_EQ(it4, std::next(segment_tree.begin()));
+
+  segment_tree = numbers;
+
+  auto it5 = segment_tree.insert(std::next(segment_tree.begin()), numbers);
+  EXPECT_EQ(segment_tree, SegmentTree({0, 0, 1, 2, 1, 2}));
+  EXPECT_EQ(it5, std::next(segment_tree.begin()));
+
+  segment_tree = numbers;
+
+  auto it6 = segment_tree.emplace(segment_tree.begin(), 3);
+  EXPECT_EQ(segment_tree, SegmentTree({3, 0, 1, 2}));
+  EXPECT_EQ(it6, segment_tree.begin());
+
+  segment_tree = numbers;
+  auto it7 = segment_tree.erase(std::next(segment_tree.begin()));
+  EXPECT_EQ(segment_tree, SegmentTree({0, 2}));
+  EXPECT_EQ(it7, std::next(segment_tree.begin()));
+
+  segment_tree = {0, 1, 2, 3, 4, 5, 6};
+  auto it8 = segment_tree.erase(std::next(segment_tree.begin(), 3),
+                                std::next(segment_tree.begin(), 6));
+  EXPECT_EQ(segment_tree, SegmentTree({0, 1, 2, 6}));
+  EXPECT_EQ(it8, std::next(segment_tree.begin(), 3));
+
+  segment_tree = {0, 1, 2, 3, 4, 5, 6};
+  segment_tree.resize(3);
+  EXPECT_EQ(segment_tree, SegmentTree({0, 1, 2}));
+  segment_tree.resize(5);
+  EXPECT_EQ(segment_tree, SegmentTree({0, 1, 2, 0, 0}));
+
+  segment_tree = numbers;
+  SegmentTree other = {9, 8, 7};
+  segment_tree.swap(other);
+  EXPECT_EQ(segment_tree, SegmentTree({9, 8, 7}));
+  EXPECT_EQ(other, SegmentTree(numbers));
 }
