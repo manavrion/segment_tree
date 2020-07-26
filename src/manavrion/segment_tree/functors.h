@@ -6,12 +6,19 @@
 #pragma once
 #include <algorithm>
 
-namespace manavrion::details {
+namespace manavrion::segment_tree::functors {
 
 struct default_reducer {
   template <typename T>
   auto operator()(const T& lhs, const T& rhs) const noexcept {
     return std::min(lhs, rhs);
+  }
+};
+
+struct default_mapper {
+  template <typename T>
+  decltype(auto) operator()(T&& t) const noexcept {
+    return std::forward<T>(t);
   }
 };
 
@@ -22,11 +29,6 @@ template <typename T, typename Reducer>
 struct deduce_mapper<T, Reducer,
                      std::enable_if_t<std::is_constructible_v<
                          T, std::invoke_result_t<Reducer, T, T>>>>
-    : std::true_type {
-  template <typename V>
-  decltype(auto) operator()(V&& v) const noexcept {
-    return std::forward<V>(v);
-  }
-};
+    : std::true_type, public default_mapper {};
 
-}  // namespace manavrion::details
+}  // namespace manavrion::segment_tree::functors

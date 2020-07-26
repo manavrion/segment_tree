@@ -16,8 +16,8 @@
 
 namespace manavrion::segment_tree {
 
-template <typename T, typename Reducer = details::default_reducer,
-          typename Mapper = details::deduce_mapper<T, Reducer>>
+template <typename T, typename Reducer = functors::default_reducer,
+          typename Mapper = functors::deduce_mapper<T, Reducer>>
 class node_based_segment_tree {
   static_assert(std::is_invocable_v<Mapper, T>);
   using mapper_result = std::decay_t<std::invoke_result_t<Mapper, T>>;
