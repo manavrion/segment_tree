@@ -47,6 +47,17 @@ void ConstructorTest() {
   SegmentTree init_ctor_ = numbers;
 
   SegmentTree init_alloc_ctor(numbers, std::allocator<int>{});
+
+  SegmentTree init_test1 = {0};
+  EXPECT_EQ(init_test1.size(), 1);
+  SegmentTree init_test2 = {0, 1};
+  EXPECT_EQ(init_test2.size(), 2);
+  SegmentTree init_test3 = {0, 1, 2};
+  EXPECT_EQ(init_test3.size(), 3);
+  SegmentTree init_test4 = {0, 1, 2, 3};
+  EXPECT_EQ(init_test4.size(), 4);
+  SegmentTree init_test5 = {0, 1, 2, 3, 4};
+  EXPECT_EQ(init_test5.size(), 5);
 }
 
 template <typename SegmentTree>
@@ -100,22 +111,18 @@ void MethodIterators() {
   const auto& const_segment_tree = segment_tree;
 
   EXPECT_EQ(*segment_tree.begin(), 0);
-  //*segment_tree.begin() = 0;
   EXPECT_EQ(*const_segment_tree.begin(), 0);
   EXPECT_EQ(*segment_tree.cbegin(), 0);
 
   EXPECT_EQ(*std::prev(segment_tree.end()), 2);
-  //*std::prev(segment_tree.end()) = 2;
   EXPECT_EQ(*std::prev(const_segment_tree.end()), 2);
   EXPECT_EQ(*std::prev(segment_tree.cend()), 2);
 
   EXPECT_EQ(*segment_tree.rbegin(), 2);
-  //*segment_tree.rbegin() = 2;
   EXPECT_EQ(*const_segment_tree.rbegin(), 2);
   EXPECT_EQ(*segment_tree.crbegin(), 2);
 
   EXPECT_EQ(*std::prev(segment_tree.rend()), 0);
-  //*std::prev(segment_tree.rend()) = 0;
   EXPECT_EQ(*std::prev(const_segment_tree.rend()), 0);
   EXPECT_EQ(*std::prev(segment_tree.crend()), 0);
 }
@@ -142,13 +149,11 @@ void MethodModifiers() {
   segment_tree = numbers;
 
   auto it1 = segment_tree.insert(segment_tree.begin(), -1);
-  EXPECT_EQ(segment_tree.size(), 4);
-  EXPECT_EQ(segment_tree[0], -1);
+  EXPECT_EQ(segment_tree, SegmentTree({-1, 0, 1, 2}));
   EXPECT_EQ(*it1, -1);
 
   auto it2 = segment_tree.insert(segment_tree.end(), 3);
-  EXPECT_EQ(segment_tree.size(), 5);
-  EXPECT_EQ(segment_tree[4], 3);
+  EXPECT_EQ(segment_tree, SegmentTree({-1, 0, 1, 2, 3}));
   EXPECT_EQ(*it2, 3);
 
   // actual state: {-1, 0, 1, 2, 3}

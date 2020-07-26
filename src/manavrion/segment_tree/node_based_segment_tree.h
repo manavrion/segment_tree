@@ -39,9 +39,8 @@ class node_based_segment_tree {
   using const_reference = typename container_type::const_reference;
   using pointer = typename container_type::pointer;
   using const_pointer = typename container_type::const_pointer;
-  using iterator = typename container_type::iterator;
+
   using const_iterator = typename container_type::const_iterator;
-  using reverse_iterator = typename container_type::reverse_iterator;
   using const_reverse_iterator =
       typename container_type::const_reverse_iterator;
 
@@ -134,6 +133,8 @@ class node_based_segment_tree {
       tails_.emplace_back(line.back().get());
     }
 
+    assert(tails_.size() == tail_size);
+
     while (line.size() > 1) {
       std::vector<std::unique_ptr<node_t>> new_line;
       new_line.reserve(line.size() / 2 + bool(line.size() % 2));
@@ -156,6 +157,10 @@ class node_based_segment_tree {
   // Updates unique element.
   // Time complexity - O(log n).
   void update(size_t index) {
+    const size_t tail_size = data_.size() / 2 + bool(data_.size() % 2);
+    assert(tails_.size() == tail_size);
+
+    assert(index < data_.size());
     if (tails_.empty()) {
       assert(data_.size() <= 1);
       return;
@@ -306,12 +311,6 @@ class node_based_segment_tree {
   // Time complexity - O(1).
   [[nodiscard]] const T* data() const noexcept { return data_.data(); }
 
-#if 0
-  // TODO: Make iterator adaptor.
-  // Time complexity - O(1) but O(log) on iterator destroy.
-  [[nodiscard]] iterator begin() noexcept { return data_.begin(); }
-#endif
-
   // Time complexity - O(1).
   [[nodiscard]] const_iterator begin() const noexcept { return data_.begin(); }
 
@@ -320,23 +319,11 @@ class node_based_segment_tree {
     return data_.cbegin();
   }
 
-#if 0
-  // TODO: Make iterator adaptor.
-  // Time complexity - O(1) but O(log) on iterator destroy.
-  [[nodiscard]] iterator end() noexcept { return data_.end(); }
-#endif
-
   // Time complexity - O(1).
   [[nodiscard]] const_iterator end() const noexcept { return data_.end(); }
 
   // Time complexity - O(1).
   [[nodiscard]] const_iterator cend() const noexcept { return data_.cend(); }
-
-#if 0
-  // TODO: Make iterator adaptor.
-  // Time complexity - O(1) but O(log) on iterator destroy.
-  [[nodiscard]] reverse_iterator rbegin() noexcept { return data_.rbegin(); }
-#endif
 
   // Time complexity - O(1).
   [[nodiscard]] const_reverse_iterator rbegin() const noexcept {
@@ -347,12 +334,6 @@ class node_based_segment_tree {
   [[nodiscard]] const_reverse_iterator crbegin() const noexcept {
     return data_.crbegin();
   }
-
-#if 0
-  // TODO: Make iterator adaptor.
-  // Time complexity - O(1) but O(log) on iterator destroy.
-  [[nodiscard]] reverse_iterator rend() noexcept { return data_.rend(); }
-#endif
 
   // Time complexity - O(1).
   [[nodiscard]] const_reverse_iterator rend() const noexcept {
@@ -388,51 +369,51 @@ class node_based_segment_tree {
   }
 
   // Time complexity - O(n).
-  iterator insert(const_iterator pos, const T& value) {
+  const_iterator insert(const_iterator pos, const T& value) {
     details::scoped{[this] { rebuild_tree(); }};
     return data_.insert(pos, value);
   }
 
   // Time complexity - O(n).
-  iterator insert(const_iterator pos, T&& value) {
+  const_iterator insert(const_iterator pos, T&& value) {
     details::scoped{[this] { rebuild_tree(); }};
     return data_.insert(pos, std::move(value));
   }
 
   // Time complexity - O(n).
-  iterator insert(const_iterator pos, size_type count, const T& value) {
+  const_iterator insert(const_iterator pos, size_type count, const T& value) {
     details::scoped{[this] { rebuild_tree(); }};
     return data_.insert(pos, count, value);
   }
 
   // Time complexity - O(n).
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
-  iterator insert(const_iterator pos, InputIt first, InputIt last) {
+  const_iterator insert(const_iterator pos, InputIt first, InputIt last) {
     details::scoped{[this] { rebuild_tree(); }};
     return data_.insert(pos, first, last);
   }
 
   // Time complexity - O(n).
-  iterator insert(const_iterator pos, std::initializer_list<T> init_list) {
+  const_iterator insert(const_iterator pos, std::initializer_list<T> init_list) {
     details::scoped{[this] { rebuild_tree(); }};
     return data_.insert(pos, init_list);
   }
 
   // Time complexity - O(n).
   template <typename... Args>
-  iterator emplace(const_iterator pos, Args&&... args) {
+  const_iterator emplace(const_iterator pos, Args&&... args) {
     details::scoped{[this] { rebuild_tree(); }};
     return data_.emplace(pos, std::forward<Args>(args)...);
   }
 
   // Time complexity - O(n).
-  iterator erase(const_iterator pos) {
+  const_iterator erase(const_iterator pos) {
     details::scoped{[this] { rebuild_tree(); }};
     return data_.erase(pos);
   }
 
   // Time complexity - O(n).
-  iterator erase(const_iterator first, const_iterator last) {
+  const_iterator erase(const_iterator first, const_iterator last) {
     details::scoped{[this] { rebuild_tree(); }};
     return data_.erase(first, last);
   }
