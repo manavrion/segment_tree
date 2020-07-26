@@ -31,15 +31,19 @@ class node_based_segment_tree {
 
  private:
   struct node_t {
-    node_value_type node_value_;
+   public:
+    node_value_type value;
+
+   private:
     size_t first_index_;
     size_t last_index_;
     node_t* parent_ = nullptr;
     std::unique_ptr<node_t> left_;
     std::unique_ptr<node_t> right_;
 
-    node_t(node_value_type node_value, size_t first_index, size_t last_index)
-        : node_value_(std::move(node_value)),
+   public:
+    node_t(node_value_type value, size_t first_index, size_t last_index)
+        : value(std::move(value)),
           first_index_(first_index),
           last_index_(last_index) {
       assert(first_index_ < last_index_);
@@ -47,7 +51,7 @@ class node_based_segment_tree {
 
     node_t(std::unique_ptr<node_t> left, std::unique_ptr<node_t> right,
            const Reducer& reducer)
-        : node_value_(reducer(left->node_value_, right->node_value_)),
+        : value(reducer(left->value, right->value)),
           first_index_(left->first_index_),
           last_index_(right->last_index_),
           left_(std::move(left)),
@@ -59,12 +63,17 @@ class node_based_segment_tree {
       right_->parent_ = this;
     }
 
-    [[nodiscard]] size_t size() const noexcept {
+    size_t first_index() const { return first_index_; }
+    size_t last_index() const { return last_index_; }
+
+    node_t* parent() const { return parent_; }
+
+    size_t size() const {
       assert(first_index_ < last_index_);
       return last_index_ - first_index_;
     }
 
-    [[nodiscard]] bool is_leaf() const noexcept {
+    bool is_leaf() const {
       bool result = size() <= 2;
       if (result) {
         assert(!left_);
@@ -73,9 +82,14 @@ class node_based_segment_tree {
       return result;
     }
 
-    [[nodiscard]] std::array<node_t*, 2> childs() noexcept {
+    std::array<node_t*, 2> childs() {
       assert(left_ || right_);
       return {left_.get(), right_.get()};
+    }
+
+    bool is_part_of(size_t first, size_t last) const {
+      assert(first <= last);
+      return first <= first_index_ && last_index_ <= last;
     }
   };
 
@@ -151,23 +165,23 @@ class node_based_segment_tree {
       if (!node) {
         continue;
       }
-      if (first_index <= node->first_index_ &&
-          node->last_index_ <= last_index) {
-        results.emplace_back(node->node_value_);
+      if (node->is_part_of(first_index, last_index)) {
+        results.emplace_back(node->value);
         continue;
       }
       if (node->is_leaf()) {
-        if (first_index == node->first_index_) {
+        if (first_index == node->first_index()) {
           results.emplace_back(mapper_(data_[first_index]));
         }
-        if (first_index == node->first_index_ + 1) {
-          assert(first_index < node->last_index_);
+        if (first_index == node->first_index() + 1) {
+          assert(first_index < node->last_index());
           results.emplace_back(mapper_(data_[first_index]));
         }
         continue;
       }
-      q.emplace_back(node->left_.get());
-      q.emplace_back(node->right_.get());
+      for (auto child : node->childs()) {
+        q.emplace_back(child);
+      }
     }
     assert(!results.empty());
     node_value_type result = std::move(results.back());
@@ -192,22 +206,21 @@ class node_based_segment_tree {
     assert(node->is_leaf());
     // TODO: Do it with ranges!
     if (node->size() == 2) {
-      node->node_value_ = reducer_(mapper_(data_[node->first_index_]),
-                                   mapper_(data_[node->first_index_ + 1]));
+      node->value = reducer_(mapper_(data_[node->first_index()]),
+                             mapper_(data_[node->first_index() + 1]));
     } else {
-      node->node_value_ = mapper_(data_[node->first_index_]);
+      node->value = mapper_(data_[node->first_index()]);
     }
-    node = node->parent_;
+    node = node->parent();
     while (node) {
       auto childs = node->childs();
       assert(childs.size() != 1);
-      node->node_value_ =
-          reducer_(childs[0]->node_value_, childs[1]->node_value_);
-      node = node->parent_;
+      node->value = reducer_(childs[0]->value, childs[1]->value);
+      node = node->parent();
     }
   }
 
-  [[nodiscard]] bool empty() const { return data_.empty(); }
+  bool empty() const { return data_.empty(); }
 
   void clear() {
     data_.clear();
