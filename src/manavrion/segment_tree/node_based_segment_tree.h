@@ -251,19 +251,44 @@ class node_based_segment_tree {
   // Time complexity - O(n).
   void assign(std::initializer_list<T> init_list) { operator=(init_list); }
 
+  // Time complexity - O(1).
   [[nodiscard]] allocator_type get_allocator() const noexcept {
     return data_.get_allocator();
   }
 
+  // Time complexity - O(1).
   [[nodiscard]] reference at(size_type pos) { return data_.at(pos); }
+
+  // Time complexity - O(1).
   [[nodiscard]] const_reference at(size_type pos) const {
     return data_.at(pos);
   }
 
+  // Time complexity - O(1).
   [[nodiscard]] reference operator[](size_type pos) { return data_[pos]; }
+
+  // Time complexity - O(1).
   [[nodiscard]] const_reference operator[](size_type pos) const {
     return data_[pos];
   }
+
+  // Time complexity - O(1).
+  [[nodiscard]] reference front() { return data_.front(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] const_reference front() const { return data_.front(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] reference back() { return data_.back(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] const_reference back() const { return data_.back(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] T* data() noexcept { return data_.data(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] const T* data() const noexcept { return data_.data(); }
 
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).

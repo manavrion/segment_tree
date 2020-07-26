@@ -31,8 +31,7 @@ void TestSimpleSegmentTree() {
   OperatorAssignTest<SegmentTree>();
   MethodAssignTest<SegmentTree>();
   MethodGetAllocatorTest<SegmentTree>();
-  MethodAt<SegmentTree>();
-  OperatorBraces<SegmentTree>();
+  MethodElementAccess<SegmentTree>();
 }
 
 TEST(NodeBasedSegmentTree, Test) {

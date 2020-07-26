@@ -7,7 +7,7 @@
 
 #include <array>
 
-constexpr std::array numbers = {0, 1, 2};
+constexpr auto numbers = {0, 1, 2};
 
 using manavrion::segment_tree::functors::default_mapper;
 using manavrion::segment_tree::functors::default_reducer;
@@ -38,14 +38,14 @@ void ConstructorTest() {
   SegmentTree move_ctor0(SegmentTree{});
   SegmentTree move_ctor1(SegmentTree{}, std::allocator<int>{});
 
-  SegmentTree init_ctor0({0, 1, 2}, default_reducer{}, default_mapper{},
+  SegmentTree init_ctor0(numbers, default_reducer{}, default_mapper{},
                          std::allocator<int>{});
-  SegmentTree init_ctor1({0, 1, 2}, default_reducer{}, default_mapper{});
-  SegmentTree init_ctor2({0, 1, 2}, default_reducer{});
-  SegmentTree init_ctor3({0, 1, 2});
-  SegmentTree init_ctor_ = {0, 1, 2};
+  SegmentTree init_ctor1(numbers, default_reducer{}, default_mapper{});
+  SegmentTree init_ctor2(numbers, default_reducer{});
+  SegmentTree init_ctor3(numbers);
+  SegmentTree init_ctor_ = numbers;
 
-  SegmentTree init_alloc_ctor({0, 1, 2}, std::allocator<int>{});
+  SegmentTree init_alloc_ctor(numbers, std::allocator<int>{});
 }
 
 template <typename SegmentTree>
@@ -55,16 +55,16 @@ void OperatorAssignTest() {
 
   segment_tree = other_tree;
   segment_tree = std::move(other_tree);
-  segment_tree = {0, 1, 2};
+  segment_tree = numbers;
 }
 
 template <typename SegmentTree>
 void MethodAssignTest() {
-  SegmentTree segment_tree = {0, 1, 2};
+  SegmentTree segment_tree = numbers;
 
   segment_tree.assign(10, 123);
   segment_tree.assign(numbers.begin(), numbers.end());
-  segment_tree.assign({0, 1, 2});
+  segment_tree.assign(numbers);
 }
 
 template <typename SegmentTree>
@@ -74,17 +74,21 @@ void MethodGetAllocatorTest() {
 }
 
 template <typename SegmentTree>
-void MethodAt() {
-  SegmentTree segment_tree = {0, 1, 2};
+void MethodElementAccess() {
+  SegmentTree segment_tree = numbers;
   const auto& const_segment_tree = segment_tree;
   EXPECT_EQ(segment_tree.at(0), 0);
   EXPECT_EQ(const_segment_tree.at(2), 2);
-}
 
-template <typename SegmentTree>
-void OperatorBraces() {
-  SegmentTree segment_tree = {0, 1, 2};
-  const auto& const_segment_tree = segment_tree;
   EXPECT_EQ(segment_tree[0], 0);
   EXPECT_EQ(const_segment_tree[2], 2);
+
+  EXPECT_EQ(segment_tree.front(), 0);
+  EXPECT_EQ(const_segment_tree.front(), 0);
+
+  EXPECT_EQ(segment_tree.back(), 2);
+  EXPECT_EQ(const_segment_tree.back(), 2);
+
+  EXPECT_EQ(segment_tree.data()[0], 0);
+  EXPECT_EQ(segment_tree.data()[2], 2);
 }
