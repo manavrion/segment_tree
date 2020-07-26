@@ -16,8 +16,8 @@
 
 namespace manavrion::segment_tree {
 
-template <typename T, typename Mapper = details::default_mapper<T>,
-          typename Reducer = details::default_reducer<T>>
+template <typename T, typename Reducer = details::default_reducer,
+          typename Mapper = details::deduce_mapper<T, Reducer>>
 class node_based_segment_tree {
   static_assert(std::is_invocable_v<Mapper, T>);
   using mapper_result = std::decay_t<std::invoke_result_t<Mapper, T>>;
@@ -97,9 +97,9 @@ class node_based_segment_tree {
   // Creation of segment tree nodes,
   // Time complexity - O(n).
   template <typename InputIt>
-  node_based_segment_tree(InputIt first, InputIt last, Mapper mapper = {},
-                          Reducer reducer = {})
-      : mapper_(std::move(mapper)), reducer_(std::move(reducer)) {
+  node_based_segment_tree(InputIt first, InputIt last, Reducer reducer = {},
+                          Mapper mapper = {})
+      : reducer_(std::move(reducer)), mapper_(std::move(mapper)) {
     data_.assign(first, last);
     const size_t tail_size = data_.size() / 2 + bool(data_.size() % 2);
     std::vector<std::unique_ptr<node_t>> line;

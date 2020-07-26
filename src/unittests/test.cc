@@ -3,16 +3,74 @@
 #include "manavrion/segment_tree/node_based_segment_tree.h"
 #include "manavrion/segment_tree/segment_tree.h"
 
+template <typename T>
+struct test_reduce_result_t {
+  T min;
+  T max;
+  T sum;
+  T mul;
+};
+
+template <typename T>
+struct test_mapper {
+  auto operator()(const T& t) const noexcept {
+    return test_reduce_result_t<T>{t, t, t, t};
+  }
+};
+
+template <typename T>
+struct test_reducer {
+  auto operator()(const test_reduce_result_t<T>& lhs,
+                  const test_reduce_result_t<T>& rhs) const noexcept {
+    return test_reduce_result_t<T>{std::min(lhs.min, rhs.min),
+                                   std::max(lhs.max, rhs.max),
+                                   lhs.sum + rhs.sum, lhs.sum * rhs.sum};
+  }
+};
+
 using namespace manavrion::segment_tree;
 
 TEST(SimpleTest, Test) {
-  segment_tree<int> st1;
-  node_based_segment_tree<int> st2;
+  node_based_segment_tree<int, test_reducer<int>, test_mapper<int>> st2;
 }
 
-TEST(NodeBasedSegmentTree, BasicTest) {
+struct Min {
+  template <typename T>
+  auto operator()(const T& lhs, const T& rhs) const noexcept {
+    return std::min(lhs, rhs);
+  }
+};
+
+TEST(NodeBasedSegmentTree, SimpleTest) {
   const std::vector numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  node_based_segment_tree<int> st(numbers.begin(), numbers.end());
+
+  auto min = [](const auto& lhs, const auto& rhs) {
+    return std::min(lhs, rhs);
+  };
+
+  node_based_segment_tree<int, decltype(min)> st(numbers.begin(), numbers.end(),
+                                                 min);
+  EXPECT_EQ(st.query(0, 10), 1);
+  EXPECT_EQ(st.query(3, 6), 4);
+  EXPECT_EQ(st.query(1, 10), 2);
+
+  st.update(4, 1);
+  st.update(2, 5);
+  st.update(3, 2);
+  st.update(0, 11);
+  st.update(1, 7);
+
+  // actual state {11, 7, 5, 2, 1, 6, 7, 8, 9, 10}
+
+  EXPECT_EQ(st.query(0, 10), 1);
+  EXPECT_EQ(st.query(3, 6), 1);
+  EXPECT_EQ(st.query(1, 10), 1);
+}
+
+TEST(NodeBasedSegmentTree, ComplicatedTest) {
+  const std::vector numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  node_based_segment_tree<int, test_reducer<int>, test_mapper<int>> st(
+      numbers.begin(), numbers.end());
   auto r1 = st.query(0, 10);
   EXPECT_EQ(r1.min, 1);
   EXPECT_EQ(r1.max, 10);

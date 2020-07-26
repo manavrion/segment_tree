@@ -8,28 +8,24 @@
 
 namespace manavrion::details {
 
-template <typename T>
-struct default_reduce_result_t {
-  T min;
-  T max;
-  T sum;
-  T mul;
-};
-
-template <typename T>
-struct default_mapper {
-  auto operator()(const T& t) const noexcept {
-    return default_reduce_result_t<T>{t, t, t, t};
+struct default_reducer {
+  template <typename T>
+  auto operator()(const T& lhs, const T& rhs) const noexcept {
+    return std::min(lhs, rhs);
   }
 };
 
-template <typename T>
-struct default_reducer {
-  auto operator()(const default_reduce_result_t<T>& lhs,
-                  const default_reduce_result_t<T>& rhs) const noexcept {
-    return default_reduce_result_t<T>{std::min(lhs.min, rhs.min),
-                                      std::max(lhs.max, rhs.max),
-                                      lhs.sum + rhs.sum, lhs.sum * rhs.sum};
+template <typename, typename, typename E = void>
+struct deduce_mapper {};
+
+template <typename T, typename Reducer>
+struct deduce_mapper<T, Reducer,
+                     std::enable_if_t<std::is_constructible_v<
+                         T, std::invoke_result_t<Reducer, T, T>>>>
+    : std::true_type {
+  template <typename V>
+  decltype(auto) operator()(V&& v) const noexcept {
+    return std::forward<V>(v);
   }
 };
 

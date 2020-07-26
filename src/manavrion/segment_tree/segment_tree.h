@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "functors.h"
-
+#if 0
 namespace manavrion::segment_tree {
 
 template <typename T, typename Mapper = details::default_mapper<T>,
@@ -36,3 +36,4 @@ class segment_tree {
 };
 
 }  // namespace manavrion::segment_tree
+#endif
