@@ -251,6 +251,10 @@ class node_based_segment_tree {
   // Time complexity - O(n).
   void assign(std::initializer_list<T> init_list) { operator=(init_list); }
 
+  [[nodiscard]] constexpr allocator_type get_allocator() const noexcept {
+    return data_.get_allocator();
+  }
+
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).
   [[nodiscard]] reduced_type query(size_t first_index,

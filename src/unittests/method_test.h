@@ -59,10 +59,16 @@ void OperatorAssignTest() {
 }
 
 template <typename SegmentTree>
-void AssignTest() {
+void MethodAssignTest() {
   SegmentTree segment_tree = {0, 1, 2};
 
   segment_tree.assign(10, 123);
   segment_tree.assign(numbers.begin(), numbers.end());
   segment_tree.assign({0, 1, 2});
+}
+
+template <typename SegmentTree>
+void MethodGetAllocatorTest() {
+  SegmentTree segment_tree;
+  EXPECT_EQ(segment_tree.get_allocator(), std::allocator<int>());
 }
