@@ -106,23 +106,8 @@ class node_based_segment_tree {
     auto childs() { return std::array<node_t*, 2>{left_.get(), right_.get()}; }
   };
 
- public:
-  node_based_segment_tree() = default;
-  node_based_segment_tree(const node_based_segment_tree&) = default;
-  node_based_segment_tree& operator=(const node_based_segment_tree&) = default;
-  node_based_segment_tree(node_based_segment_tree&&) = default;
-  node_based_segment_tree& operator=(node_based_segment_tree&&) = default;
-
-  explicit node_based_segment_tree(const Allocator& allocator)
-      : data_(allocator) {}
-
-  // Creation of segment tree nodes,
-  // Time complexity - O(n).
-  template <typename InputIt>
-  node_based_segment_tree(InputIt first, InputIt last, Reducer reducer = {},
-                          Mapper mapper = {})
-      : reducer_(std::move(reducer)), mapper_(std::move(mapper)) {
-    data_.assign(first, last);
+  // Creation of segment tree nodes, time complexity - O(n).
+  void init() {
     const size_t tail_size = data_.size() / 2 + bool(data_.size() % 2);
     std::vector<std::unique_ptr<node_t>> line;
     line.reserve(tail_size);
@@ -157,6 +142,68 @@ class node_based_segment_tree {
       head_ = std::move(line.front());
     }
   }
+
+ public:
+  node_based_segment_tree() = default;
+
+  explicit node_based_segment_tree(const Allocator& allocator)
+      : data_(allocator) {}
+
+  explicit node_based_segment_tree(Reducer reducer, Mapper mapper = {},
+                                   const Allocator& allocator = {})
+      : reducer_(std::move(reducer)),
+        mapper_(std::move(mapper)),
+        data_(allocator) {}
+
+  template <typename InputIt>
+  node_based_segment_tree(InputIt first, InputIt last, Reducer reducer = {},
+                          Mapper mapper = {}, const Allocator& allocator = {})
+      : reducer_(std::move(reducer)),
+        mapper_(std::move(mapper)),
+        data_(first, last, allocator) {
+    init();
+  }
+
+  template <typename InputIt>
+  node_based_segment_tree(InputIt first, InputIt last,
+                          const Allocator& allocator)
+      : data_(first, last, allocator) {
+    init();
+  }
+
+  node_based_segment_tree(const node_based_segment_tree& other,
+                          const Allocator& allocator = {})
+      : reducer_(other.reducer_),
+        mapper_(other.mapper_),
+        data_(other.data_, allocator) {
+    init();
+  }
+
+  node_based_segment_tree(node_based_segment_tree&& other,
+                          const Allocator& allocator = {}) noexcept
+      : reducer_(std::move(other.reducer_)),
+        mapper_(std::move(other.mapper_)),
+        data_(std::move(other.data_), allocator),
+        head_(std::move(other.head_)),
+        tails_(std::move(other.tails_)) {}
+
+  node_based_segment_tree(std::initializer_list<T> init_list,
+                          Reducer reducer = {}, Mapper mapper = {},
+                          const Allocator& alloc = {})
+      : reducer_(std::move(reducer)),
+        mapper_(std::move(mapper)),
+        data_(init_list, alloc) {
+    init();
+  }
+
+  node_based_segment_tree(std::initializer_list<T> init_list,
+                          const Allocator& alloc)
+      : data_(init_list, alloc) {
+    init();
+  }
+
+  node_based_segment_tree& operator=(const node_based_segment_tree&) = default;
+  node_based_segment_tree& operator=(node_based_segment_tree&&) = default;
 
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).
@@ -252,8 +299,8 @@ class node_based_segment_tree {
   }
 
  private:
-  Mapper mapper_;
   Reducer reducer_;
+  Mapper mapper_;
   std::vector<T, Allocator> data_;
 
   std::unique_ptr<node_t> head_;
