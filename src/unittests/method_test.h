@@ -115,3 +115,15 @@ void MethodIterators() {
   EXPECT_EQ(*std::prev(const_segment_tree.rend()), 0);
   EXPECT_EQ(*std::prev(segment_tree.crend()), 0);
 }
+
+template <typename SegmentTree>
+void MethodCapacity() {
+  SegmentTree segment_tree = numbers;
+  EXPECT_EQ(segment_tree.max_size(), std::vector<int>{}.max_size());
+
+  EXPECT_FALSE(segment_tree.empty());
+  EXPECT_EQ(segment_tree.size(), 3);
+  segment_tree.clear();
+  EXPECT_TRUE(segment_tree.empty());
+  EXPECT_EQ(segment_tree.size(), 0);
+}

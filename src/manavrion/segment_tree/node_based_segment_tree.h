@@ -336,6 +336,21 @@ class node_based_segment_tree {
     return data_.crend();
   }
 
+  // Time complexity - O(1).
+  [[nodiscard]] bool empty() const noexcept {
+    if (data_.empty()) {
+      assert(!head_);
+      assert(tails_.empty());
+    }
+    return data_.empty();
+  }
+
+  // Time complexity - O(1).
+  [[nodiscard]] size_type size() const noexcept { return data_.size(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] size_type max_size() const noexcept { return data_.max_size(); }
+
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).
   [[nodiscard]] reduced_type query(size_t first_index,
@@ -412,14 +427,6 @@ class node_based_segment_tree {
       node->value = reducer_(childs[0]->value, childs[1]->value);
       node = node->parent();
     }
-  }
-
-  [[nodiscard]] bool empty() const {
-    if (data_.empty()) {
-      assert(!head_);
-      assert(tails_.empty());
-    }
-    return data_.empty();
   }
 
   void clear() {
