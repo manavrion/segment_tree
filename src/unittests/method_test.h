@@ -127,3 +127,11 @@ void MethodCapacity() {
   EXPECT_TRUE(segment_tree.empty());
   EXPECT_EQ(segment_tree.size(), 0);
 }
+
+template <typename SegmentTree>
+void MethodModifiers() {
+  SegmentTree segment_tree = numbers;
+
+  segment_tree.clear();
+  EXPECT_TRUE(segment_tree.empty());
+}
