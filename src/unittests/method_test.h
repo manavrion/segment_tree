@@ -100,18 +100,22 @@ void MethodIterators() {
   const auto& const_segment_tree = segment_tree;
 
   EXPECT_EQ(*segment_tree.begin(), 0);
+  //*segment_tree.begin() = 0;
   EXPECT_EQ(*const_segment_tree.begin(), 0);
   EXPECT_EQ(*segment_tree.cbegin(), 0);
 
   EXPECT_EQ(*std::prev(segment_tree.end()), 2);
+  //*std::prev(segment_tree.end()) = 2;
   EXPECT_EQ(*std::prev(const_segment_tree.end()), 2);
   EXPECT_EQ(*std::prev(segment_tree.cend()), 2);
 
   EXPECT_EQ(*segment_tree.rbegin(), 2);
+  //*segment_tree.rbegin() = 2;
   EXPECT_EQ(*const_segment_tree.rbegin(), 2);
   EXPECT_EQ(*segment_tree.crbegin(), 2);
 
   EXPECT_EQ(*std::prev(segment_tree.rend()), 0);
+  //*std::prev(segment_tree.rend()) = 0;
   EXPECT_EQ(*std::prev(const_segment_tree.rend()), 0);
   EXPECT_EQ(*std::prev(segment_tree.crend()), 0);
 }

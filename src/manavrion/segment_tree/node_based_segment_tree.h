@@ -257,15 +257,9 @@ class node_based_segment_tree {
   }
 
   // Time complexity - O(1).
-  [[nodiscard]] reference at(size_type pos) { return data_.at(pos); }
-
-  // Time complexity - O(1).
   [[nodiscard]] const_reference at(size_type pos) const {
     return data_.at(pos);
   }
-
-  // Time complexity - O(1).
-  [[nodiscard]] reference operator[](size_type pos) { return data_[pos]; }
 
   // Time complexity - O(1).
   [[nodiscard]] const_reference operator[](size_type pos) const {
@@ -273,25 +267,19 @@ class node_based_segment_tree {
   }
 
   // Time complexity - O(1).
-  [[nodiscard]] reference front() { return data_.front(); }
-
-  // Time complexity - O(1).
   [[nodiscard]] const_reference front() const { return data_.front(); }
-
-  // Time complexity - O(1).
-  [[nodiscard]] reference back() { return data_.back(); }
 
   // Time complexity - O(1).
   [[nodiscard]] const_reference back() const { return data_.back(); }
 
   // Time complexity - O(1).
-  [[nodiscard]] T* data() noexcept { return data_.data(); }
-
-  // Time complexity - O(1).
   [[nodiscard]] const T* data() const noexcept { return data_.data(); }
 
-  // Time complexity - O(1).
+#if 0
+  // TODO: Make iterator adaptor.
+  // Time complexity - O(1) but O(log) on iterator destroy.
   [[nodiscard]] iterator begin() noexcept { return data_.begin(); }
+#endif
 
   // Time complexity - O(1).
   [[nodiscard]] const_iterator begin() const noexcept { return data_.begin(); }
@@ -301,8 +289,11 @@ class node_based_segment_tree {
     return data_.cbegin();
   }
 
-  // Time complexity - O(1).
+#if 0
+  // TODO: Make iterator adaptor.
+  // Time complexity - O(1) but O(log) on iterator destroy.
   [[nodiscard]] iterator end() noexcept { return data_.end(); }
+#endif
 
   // Time complexity - O(1).
   [[nodiscard]] const_iterator end() const noexcept { return data_.end(); }
@@ -310,8 +301,11 @@ class node_based_segment_tree {
   // Time complexity - O(1).
   [[nodiscard]] const_iterator cend() const noexcept { return data_.cend(); }
 
-  // Time complexity - O(1).
+#if 0
+  // TODO: Make iterator adaptor.
+  // Time complexity - O(1) but O(log) on iterator destroy.
   [[nodiscard]] reverse_iterator rbegin() noexcept { return data_.rbegin(); }
+#endif
 
   // Time complexity - O(1).
   [[nodiscard]] const_reverse_iterator rbegin() const noexcept {
@@ -323,8 +317,11 @@ class node_based_segment_tree {
     return data_.crbegin();
   }
 
-  // Time complexity - O(1).
+#if 0
+  // TODO: Make iterator adaptor.
+  // Time complexity - O(1) but O(log) on iterator destroy.
   [[nodiscard]] reverse_iterator rend() noexcept { return data_.rend(); }
+#endif
 
   // Time complexity - O(1).
   [[nodiscard]] const_reverse_iterator rend() const noexcept {
