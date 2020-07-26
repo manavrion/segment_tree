@@ -8,6 +8,7 @@
 #include <memory>
 #include <numeric>
 #include <queue>
+#include <range/v3/view/filter.hpp>
 #include <type_traits>
 #include <vector>
 
@@ -59,19 +60,15 @@ class node_based_segment_tree {
       // Nodes must be adjacent.
       assert(left_->last_index_ == right_->first_index_);
       assert(first_index_ < last_index_);
+      assert(left_ && right_);
       left_->parent_ = this;
       right_->parent_ = this;
     }
 
     size_t first_index() const { return first_index_; }
     size_t last_index() const { return last_index_; }
-
     node_t* parent() const { return parent_; }
-
-    size_t size() const {
-      assert(first_index_ < last_index_);
-      return last_index_ - first_index_;
-    }
+    size_t size() const { return last_index_ - first_index_; }
 
     bool is_leaf() const {
       bool result = size() <= 2;
@@ -82,15 +79,12 @@ class node_based_segment_tree {
       return result;
     }
 
-    std::array<node_t*, 2> childs() {
-      assert(left_ || right_);
-      return {left_.get(), right_.get()};
-    }
-
     bool is_part_of(size_t first, size_t last) const {
       assert(first <= last);
       return first <= first_index_ && last_index_ <= last;
     }
+
+    auto childs() { return std::array<node_t*, 2>{left_.get(), right_.get()}; }
   };
 
  public:
@@ -144,7 +138,8 @@ class node_based_segment_tree {
 
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).
-  node_value_type query(size_t first_index, size_t last_index) const {
+  [[nodiscard]] node_value_type query(size_t first_index,
+                                      size_t last_index) const {
     assert(head_);
     assert(first_index <= last_index);
     assert(last_index <= data_.size());
@@ -214,13 +209,12 @@ class node_based_segment_tree {
     node = node->parent();
     while (node) {
       auto childs = node->childs();
-      assert(childs.size() != 1);
       node->value = reducer_(childs[0]->value, childs[1]->value);
       node = node->parent();
     }
   }
 
-  bool empty() const { return data_.empty(); }
+  [[nodiscard]] bool empty() const { return data_.empty(); }
 
   void clear() {
     data_.clear();
