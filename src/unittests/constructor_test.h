@@ -45,3 +45,16 @@ void ConstructorTest() {
 
   SegmentTree init_alloc_ctor({0, 1, 2}, std::allocator<int>{});
 }
+
+template <template <typename, typename, typename> typename S>
+void AssignOperatorTest() {
+  using namespace manavrion::segment_tree::functors;
+  using SegmentTree = S<int, default_reducer, default_mapper>;
+  const std::array numbers = {0, 1, 2};
+  SegmentTree other_tree(numbers.begin(), numbers.end());
+  SegmentTree segment_tree;
+
+  segment_tree = other_tree;
+  segment_tree = std::move(other_tree);
+  segment_tree = {0, 1, 2};
+}

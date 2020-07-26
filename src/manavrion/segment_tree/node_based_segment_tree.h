@@ -202,8 +202,23 @@ class node_based_segment_tree {
     init();
   }
 
-  node_based_segment_tree& operator=(const node_based_segment_tree&) = default;
-  node_based_segment_tree& operator=(node_based_segment_tree&&) = default;
+  node_based_segment_tree& operator=(const node_based_segment_tree& other) {
+    data_ = other.data_;
+    init();
+  }
+
+  node_based_segment_tree& operator=(node_based_segment_tree&& other) noexcept {
+    reducer_ = std::move(other.reducer_);
+    mapper_ = std::move(other.mapper_);
+    data_ = std::move(other.data_);
+    head_ = std::move(other.head_);
+    tails_ = std::move(other.tails_);
+  }
+
+  node_based_segment_tree& operator=(std::initializer_list<T> init_list) {
+    data_ = init_list;
+    init();
+  }
 
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).
