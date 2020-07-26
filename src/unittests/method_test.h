@@ -7,11 +7,13 @@
 
 #include <array>
 
-template <template <typename, typename, typename> typename S>
+constexpr std::array numbers = {0, 1, 2};
+
+using manavrion::segment_tree::functors::default_mapper;
+using manavrion::segment_tree::functors::default_reducer;
+
+template <typename SegmentTree>
 void ConstructorTest() {
-  using namespace manavrion::segment_tree::functors;
-  using SegmentTree = S<int, default_reducer, default_mapper>;
-  const std::array numbers = {0, 1, 2};
   SegmentTree default_ctor;
   SegmentTree alloc_ctor(std::allocator<int>{});
 
@@ -46,11 +48,8 @@ void ConstructorTest() {
   SegmentTree init_alloc_ctor({0, 1, 2}, std::allocator<int>{});
 }
 
-template <template <typename, typename, typename> typename S>
+template <typename SegmentTree>
 void OperatorAssignTest() {
-  using namespace manavrion::segment_tree::functors;
-  using SegmentTree = S<int, default_reducer, default_mapper>;
-  const std::array numbers = {0, 1, 2};
   SegmentTree other_tree(numbers.begin(), numbers.end());
   SegmentTree segment_tree;
 
@@ -59,11 +58,8 @@ void OperatorAssignTest() {
   segment_tree = {0, 1, 2};
 }
 
-template <template <typename, typename, typename> typename S>
+template <typename SegmentTree>
 void AssignTest() {
-  using namespace manavrion::segment_tree::functors;
-  using SegmentTree = S<int, default_reducer, default_mapper>;
-  const std::array numbers = {0, 1, 2};
   SegmentTree segment_tree = {0, 1, 2};
 
   segment_tree.assign(10, 123);
