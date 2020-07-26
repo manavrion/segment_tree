@@ -6,6 +6,7 @@
 #pragma once
 
 #include <array>
+#include <iterator>
 
 constexpr auto numbers = {0, 1, 2};
 
@@ -91,4 +92,26 @@ void MethodElementAccess() {
 
   EXPECT_EQ(segment_tree.data()[0], 0);
   EXPECT_EQ(segment_tree.data()[2], 2);
+}
+
+template <typename SegmentTree>
+void MethodIterators() {
+  SegmentTree segment_tree = numbers;
+  const auto& const_segment_tree = segment_tree;
+
+  EXPECT_EQ(*segment_tree.begin(), 0);
+  EXPECT_EQ(*const_segment_tree.begin(), 0);
+  EXPECT_EQ(*segment_tree.cbegin(), 0);
+
+  EXPECT_EQ(*std::prev(segment_tree.end()), 2);
+  EXPECT_EQ(*std::prev(const_segment_tree.end()), 2);
+  EXPECT_EQ(*std::prev(segment_tree.cend()), 2);
+
+  EXPECT_EQ(*segment_tree.rbegin(), 2);
+  EXPECT_EQ(*const_segment_tree.rbegin(), 2);
+  EXPECT_EQ(*segment_tree.crbegin(), 2);
+
+  EXPECT_EQ(*std::prev(segment_tree.rend()), 0);
+  EXPECT_EQ(*std::prev(const_segment_tree.rend()), 0);
+  EXPECT_EQ(*std::prev(segment_tree.crend()), 0);
 }

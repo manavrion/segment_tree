@@ -290,6 +290,52 @@ class node_based_segment_tree {
   // Time complexity - O(1).
   [[nodiscard]] const T* data() const noexcept { return data_.data(); }
 
+  // Time complexity - O(1).
+  [[nodiscard]] iterator begin() noexcept { return data_.begin(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] const_iterator begin() const noexcept { return data_.begin(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] const_iterator cbegin() const noexcept {
+    return data_.cbegin();
+  }
+
+  // Time complexity - O(1).
+  [[nodiscard]] iterator end() noexcept { return data_.end(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] const_iterator end() const noexcept { return data_.end(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] const_iterator cend() const noexcept { return data_.cend(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] reverse_iterator rbegin() noexcept { return data_.rbegin(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] const_reverse_iterator rbegin() const noexcept {
+    return data_.rbegin();
+  }
+
+  // Time complexity - O(1).
+  [[nodiscard]] const_reverse_iterator crbegin() const noexcept {
+    return data_.crbegin();
+  }
+
+  // Time complexity - O(1).
+  [[nodiscard]] reverse_iterator rend() noexcept { return data_.rend(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] const_reverse_iterator rend() const noexcept {
+    return data_.rend();
+  }
+
+  // Time complexity - O(1).
+  [[nodiscard]] const_reverse_iterator crend() const noexcept {
+    return data_.crend();
+  }
+
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).
   [[nodiscard]] reduced_type query(size_t first_index,

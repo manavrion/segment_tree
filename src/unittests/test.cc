@@ -32,6 +32,7 @@ void TestSimpleSegmentTree() {
   MethodAssignTest<SegmentTree>();
   MethodGetAllocatorTest<SegmentTree>();
   MethodElementAccess<SegmentTree>();
+  MethodIterators<SegmentTree>();
 }
 
 TEST(NodeBasedSegmentTree, Test) {
