@@ -44,4 +44,27 @@ void TestSimpleSegmentTree() {
 
 TEST(PlainSegmentTree, Test) { TestSimpleSegmentTree<PlainSegmentTree>(); }
 
-TEST(SegmentTree, Test) { TestSimpleSegmentTree<SegmentTree>(); }
+template <template <typename, typename, typename> typename S>
+void TestSimpleSegmentTreeSpecial() {
+  using namespace manavrion::segment_tree::functors;
+  using SegmentTree = S<int, default_reducer, default_mapper>;
+
+  SimpleFunctorTest<S>();
+  ComplicatedFunctorTest<S>();
+
+  ConstructorTest<SegmentTree>();
+  OperatorAssignTest<SegmentTree>();
+  MethodAssignTest<SegmentTree>();
+  MethodGetAllocatorTest<SegmentTree>();
+  MethodElementAccess<SegmentTree>();
+  MethodIterators<SegmentTree>();
+  MethodCapacity<SegmentTree>();
+  MethodModifiers<SegmentTree>();
+  Comparison<SegmentTree>();
+  Specialized<SegmentTree>();
+}
+
+TEST(SegmentTree, Test) {
+  segment_tree<int> st = {0, 1, 2, 3, 4};
+  // TestSimpleSegmentTreeSpecial<SegmentTree>();
+}

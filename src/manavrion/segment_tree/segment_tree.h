@@ -11,6 +11,7 @@
 #include <queue>
 #include <range/v3/view/filter.hpp>
 #include <type_traits>
+#include <variant>
 #include <vector>
 
 #include "details.h"
@@ -54,42 +55,79 @@ class segment_tree {
   using iterator = typename container_type::iterator;
   using reverse_iterator = typename container_type::reverse_iterator;
 
-  iterator remove_const(const const_iterator it) {
-    return std::next(data_.begin(), std::distance(data_.begin(), it));
-  }
+  struct node_t;
 
   struct node_t {
-   public:
-    reduced_type value;
+    struct leaf_data_t {
+      leaf_data_t(std::unique_ptr<value_type> value)
+          : value_(std::move(value)) {
+        assert(value_);
+      }
+
+      std::unique_ptr<value_type> value_;
+      node_t* prev_ = nullptr;
+      node_t* next_ = nullptr;
+    };
+
+    struct regular_data_t {
+      regular_data_t(std::unique_ptr<reduced_type> value,
+                     std::unique_ptr<node_t> left,
+                     std::unique_ptr<node_t> right, node_t* base)
+          : value_(std::move(value)),
+            left_(std::move(left)),
+            right_(std::move(right)) {
+        assert(value_);
+        assert(left_);
+        assert(right_);
+        // Nodes must be adjacent.
+        assert(left_->last_index_ == right_->first_index_);
+        left_->parent_ = base;
+        right_->parent_ = base;
+      }
+
+      std::unique_ptr<reduced_type> value_;
+      std::unique_ptr<node_t> left_;
+      std::unique_ptr<node_t> right_;
+    };
 
    private:
     size_t first_index_;
     size_t last_index_;
     node_t* parent_ = nullptr;
-    std::unique_ptr<node_t> left_;
-    std::unique_ptr<node_t> right_;
+    std::variant<leaf_data_t, regular_data_t> data_;
+
+    decltype(auto) value(const Mapper& mapper) const {
+      return std::visit(
+          details::overloaded{[&](const leaf_data_t& arg) -> decltype(auto) {
+                                return mapper(*arg.value_);
+                              },
+                              [](const regular_data_t& arg) -> decltype(auto) {
+                                return *arg.value_;
+                              }},
+          data_);
+    }
 
    public:
-    node_t(reduced_type value, size_t first_index, size_t last_index)
-        : value(std::move(value)),
-          first_index_(first_index),
-          last_index_(last_index) {
+    // Creates leaf.
+    node_t(std::unique_ptr<value_type> value, size_t first_index,
+           size_t last_index)
+        : first_index_(first_index),
+          last_index_(last_index),
+          data_(std::in_place_type_t<leaf_data_t>(), std::move(value)) {
+      // Leaf can not be empty.
       assert(first_index_ < last_index_);
     }
 
+    // Creates regular node.
     node_t(std::unique_ptr<node_t> left, std::unique_ptr<node_t> right,
-           const Reducer& reducer)
-        : value(reducer(left->value, right->value)),
-          first_index_(left->first_index_),
+           const Reducer& reducer, const Mapper& mapper)
+        : first_index_(left->first_index_),
           last_index_(right->last_index_),
-          left_(std::move(left)),
-          right_(std::move(right)) {
-      // Nodes must be adjacent.
-      assert(left_->last_index_ == right_->first_index_);
+          data_(std::in_place_type_t<regular_data_t>(),
+                std::make_unique<reduced_type>(
+                    reducer(left->value(mapper), right->value(mapper))),
+                std::move(left), std::move(right), this) {
       assert(first_index_ < last_index_);
-      assert(left_ && right_);
-      left_->parent_ = this;
-      right_->parent_ = this;
     }
 
     size_t first_index() const { return first_index_; }
@@ -97,71 +135,70 @@ class segment_tree {
     node_t* parent() const { return parent_; }
     size_t size() const { return last_index_ - first_index_; }
 
-    bool is_leaf() const {
-      bool result = size() <= 2;
-      if (result) {
-        assert(!left_);
-        assert(!right_);
-      }
-      return result;
-    }
+    bool is_leaf() const { return std::holds_alternative<leaf_data_t>(data_); }
 
     bool is_part_of(size_t first, size_t last) const {
       assert(first <= last);
       return first <= first_index_ && last_index_ <= last;
     }
 
-    auto childs() { return std::array<node_t*, 2>{left_.get(), right_.get()}; }
+    auto childs() {
+      return std::visit(
+          details::overloaded{
+              [&](leaf_data_t& arg) { return std::array<node_t*, 0>{}; },
+              [](regular_data_t& arg) {
+                assert(arg.left_ && arg.right_);
+                return std::array<node_t*, 2>{arg.left_.get(),
+                                              arg.right_.get()};
+              }},
+          data_);
+    }
   };
 
   void rebuild_tree() {
-    tails_.clear();
     head_.reset();
     build_tree();
   }
 
   // Creates segment tree nodes, time complexity - O(n).
-  void build_tree() {
-    assert(tails_.empty());
+  template <typename InputIt>
+  void build_tree(InputIt first, InputIt last) {
+    // This method can be called only in ctor.
     assert(!head_);
 
-    const size_t tail_size = data_.size() / 2 + bool(data_.size() % 2);
     std::vector<std::unique_ptr<node_t>> line;
-    line.reserve(tail_size);
-    tails_.reserve(tail_size);
+    const size_t size = std::distance(first, last);
+    line.reserve(size);
 
-    for (size_t i = 0; i < data_.size(); i += 2) {
-      if (i + 1 < data_.size()) {
-        line.emplace_back(std::make_unique<node_t>(
-            reducer_(mapper_(data_[i]), mapper_(data_[i + 1])), i, i + 2));
-      } else {
-        line.emplace_back(
-            std::make_unique<node_t>(mapper_(data_[i]), i, i + 1));
-      }
-      tails_.emplace_back(line.back().get());
+    size_t i = 0;
+    for (auto it = first; it != last; it = std::next(it), ++i) {
+      line.emplace_back(std::make_unique<node_t>(
+          std::make_unique<value_type>(*it), i, i + 1));
     }
-
-    assert(tails_.size() == tail_size);
+    assert(line.size() == size);
 
     while (line.size() > 1) {
       std::vector<std::unique_ptr<node_t>> new_line;
-      new_line.reserve(line.size() / 2 + bool(line.size() % 2));
+      const size_t new_size = line.size() / 2 + bool(line.size() % 2);
+      new_line.reserve(new_size);
       for (size_t i = 0; i < line.size(); i += 2) {
         if (i + 1 < line.size()) {
           new_line.emplace_back(std::make_unique<node_t>(
-              std::move(line[i]), std::move(line[i + 1]), reducer_));
+              std::move(line[i]), std::move(line[i + 1]), reducer_, mapper_));
         } else {
           new_line.emplace_back(std::move(line[i]));
         }
       }
+      assert(new_line.size() == new_size);
       line = std::move(new_line);
     }
+
     if (!line.empty()) {
       assert(line.size() == 1);
       head_ = std::move(line.front());
     }
   }
-
+#if 0
   // Updates unique element.
   // Time complexity - O(log n).
   void update(size_t index) {
@@ -211,64 +248,66 @@ class segment_tree {
     update(std::distance(data_.begin(), first),
            std::distance(data_.begin(), last));
   }
-
+#endif
  public:
   segment_tree() = default;
 
-  explicit segment_tree(const Allocator& allocator) : data_(allocator) {}
+  explicit segment_tree(const Allocator& allocator) : allocator_(allocator) {}
 
   explicit segment_tree(Reducer reducer, Mapper mapper = {},
                         const Allocator& allocator = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
-        data_(allocator) {}
+        allocator_(allocator) {}
 
+  // Time complexity - O(n).
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
   segment_tree(InputIt first, InputIt last, Reducer reducer = {},
                Mapper mapper = {}, const Allocator& allocator = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
-        data_(first, last, allocator) {
-    build_tree();
+        allocator_(allocator) {
+    build_tree(first, last);
   }
 
   // Time complexity - O(n).
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
   segment_tree(InputIt first, InputIt last, const Allocator& allocator)
-      : data_(first, last, allocator) {
-    build_tree();
+      : allocator_(allocator) {
+    build_tree(first, last);
   }
 
+#if 0
   // Time complexity - O(n).
   segment_tree(const segment_tree& other, const Allocator& allocator = {})
       : reducer_(other.reducer_),
         mapper_(other.mapper_),
-        data_(other.data_, allocator) {
-    build_tree();
+        allocator_(allocator) {
+    build_tree(other.begin(), other.end());
   }
+#endif
 
   segment_tree(segment_tree&& other, const Allocator& allocator = {}) noexcept
       : reducer_(std::move(other.reducer_)),
         mapper_(std::move(other.mapper_)),
-        data_(std::move(other.data_), allocator),
-        head_(std::move(other.head_)),
-        tails_(std::move(other.tails_)) {}
+        allocator_(allocator),
+        head_(std::move(other.head_)) {}
 
   // Time complexity - O(n).
   segment_tree(std::initializer_list<T> init_list, Reducer reducer = {},
-               Mapper mapper = {}, const Allocator& alloc = {})
+               Mapper mapper = {}, const Allocator& allocator = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
-        data_(init_list, alloc) {
-    build_tree();
+        allocator_(allocator) {
+    build_tree(init_list.begin(), init_list.end());
   }
 
   // Time complexity - O(n).
-  segment_tree(std::initializer_list<T> init_list, const Allocator& alloc)
-      : data_(init_list, alloc) {
-    build_tree();
+  segment_tree(std::initializer_list<T> init_list, const Allocator& allocator)
+      : allocator_(allocator) {
+    build_tree(init_list.begin(), init_list.end());
   }
-
+#if 0
   // Time complexity - O(n).
   segment_tree& operator=(const segment_tree& other) {
     data_ = other.data_;
@@ -571,14 +610,13 @@ class segment_tree {
     std::generate(remove_const(first), remove_const(last), g);
     update(first, last);
   }
-
+#endif
  private:
   Reducer reducer_;
   Mapper mapper_;
-  std::vector<T, Allocator> data_;
+  Allocator allocator_;
 
   std::unique_ptr<node_t> head_;
-  std::vector<node_t*> tails_;
 };
 
 }  // namespace manavrion::segment_tree

@@ -21,6 +21,14 @@ struct scoped {
 template <typename Functor>
 scoped(Functor) -> scoped<Functor>;
 
+template <class... Ts>
+struct overloaded : Ts... {
+  using Ts::operator()...;
+};
+
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
+
 template <typename InputIt>
 using require_input_iter = std::enable_if_t<std::is_convertible_v<
     typename std::iterator_traits<InputIt>::iterator_category,
