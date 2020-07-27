@@ -4,6 +4,7 @@
 //
 
 #include <cassert>
+#include <cmath>
 #include <functional>
 #include <memory>
 #include <numeric>
@@ -50,6 +51,13 @@ class node_based_segment_tree {
   using reducer_type = Reducer;
 
  private:
+  using iterator = typename container_type::iterator;
+  using reverse_iterator = typename container_type::reverse_iterator;
+
+  iterator remove_const(const const_iterator it) {
+    return std::next(data_.begin(), std::distance(data_.begin(), it));
+  }
+
   struct node_t {
    public:
     reduced_type value;
@@ -182,6 +190,26 @@ class node_based_segment_tree {
       node->value = reducer_(childs[0]->value, childs[1]->value);
       node = node->parent();
     }
+  }
+
+  // Time complexity - O(min(n, k log n)) where k is (last_index - first_index).
+  void update(size_t first_index, size_t last_index) {
+    assert(first_index <= last_index);
+    const size_t n = data_.size();
+    const size_t k = last_index - first_index;
+    const bool make_rebuild = n < 1000 || n < k * std::log(n);
+    if (make_rebuild) {
+      rebuild_tree();
+    } else {
+      while (first_index != last_index) {
+        update(first_index++);
+      }
+    }
+  }
+
+  void update(const_iterator first, const_iterator last) {
+    update(std::distance(data_.begin(), first),
+           std::distance(data_.begin(), last));
   }
 
  public:
@@ -394,7 +422,8 @@ class node_based_segment_tree {
   }
 
   // Time complexity - O(n).
-  const_iterator insert(const_iterator pos, std::initializer_list<T> init_list) {
+  const_iterator insert(const_iterator pos,
+                        std::initializer_list<T> init_list) {
     details::scoped{[this] { rebuild_tree(); }};
     return data_.insert(pos, init_list);
   }
@@ -517,6 +546,36 @@ class node_based_segment_tree {
       result = reducer_(std::move(result), std::move(node));
     }
     return result;
+  }
+
+  // Time complexity - O(min(n, k log n)) where k is size of Range.
+  template <typename Range>
+  const_iterator copy(const Range& range, const_iterator dist_first) {
+    const_iterator dist_last =
+        std::copy(range.begin(), range.end(), remove_const(dist_first));
+    update(dist_first, dist_last);
+    return dist_last;
+  }
+
+  // Time complexity - O(min(n, k log n)) where k is size of Range.
+  template <typename Range>
+  const_iterator move(Range&& range, const_iterator dist_first) {
+    const_iterator dist_last =
+        std::move(range.begin(), range.end(), remove_const(dist_first));
+    update(dist_first, dist_last);
+    return dist_last;
+  }
+
+  // Time complexity - O(min(n, k log n)) where k is distance(first, last).
+  void fill(const_iterator first, const_iterator last, const T& value) {
+    std::fill(remove_const(first), remove_const(last), value);
+    update(first, last);
+  }
+
+  template <class Generator>
+  void generate(const_iterator first, const_iterator last, Generator g) {
+    std::generate(remove_const(first), remove_const(last), g);
+    update(first, last);
   }
 
  private:
