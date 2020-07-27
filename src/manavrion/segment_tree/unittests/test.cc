@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "manavrion/segment_tree/node_based_segment_tree.h"
+#include "manavrion/segment_tree/plain_segment_tree.h"
 #include "manavrion/segment_tree/segment_tree.h"
 #include "manavrion/segment_tree/unittests/complicated_functor_test.h"
 #include "manavrion/segment_tree/unittests/method_test.h"
@@ -16,8 +16,8 @@
 using namespace manavrion::segment_tree;
 
 template <typename T, typename Reducer, typename Mapper>
-using NodeBasedSegmentTree =
-    node_based_segment_tree<T, Reducer, Mapper, std::allocator<T>>;
+using PlainSegmentTree =
+    plain_segment_tree<T, Reducer, Mapper, std::allocator<T>>;
 
 template <template <typename, typename, typename> typename S>
 void TestSimpleSegmentTree() {
@@ -39,6 +39,4 @@ void TestSimpleSegmentTree() {
   Specialized<SegmentTree>();
 }
 
-TEST(NodeBasedSegmentTree, Test) {
-  TestSimpleSegmentTree<NodeBasedSegmentTree>();
-}
+TEST(PlainSegmentTree, Test) { TestSimpleSegmentTree<PlainSegmentTree>(); }

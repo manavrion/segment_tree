@@ -21,7 +21,7 @@ namespace manavrion::segment_tree {
 template <typename T, typename Reducer = functors::default_reducer,
           typename Mapper = functors::deduce_mapper<T, Reducer>,
           typename Allocator = std::allocator<T>>
-class node_based_segment_tree {
+class plain_segment_tree {
   static_assert(std::is_invocable_v<Mapper, T>);
   using mapper_result = std::decay_t<std::invoke_result_t<Mapper, T>>;
   static_assert(std::is_invocable_v<Reducer, mapper_result, mapper_result>);
@@ -213,20 +213,19 @@ class node_based_segment_tree {
   }
 
  public:
-  node_based_segment_tree() = default;
+  plain_segment_tree() = default;
 
-  explicit node_based_segment_tree(const Allocator& allocator)
-      : data_(allocator) {}
+  explicit plain_segment_tree(const Allocator& allocator) : data_(allocator) {}
 
-  explicit node_based_segment_tree(Reducer reducer, Mapper mapper = {},
-                                   const Allocator& allocator = {})
+  explicit plain_segment_tree(Reducer reducer, Mapper mapper = {},
+                              const Allocator& allocator = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
         data_(allocator) {}
 
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
-  node_based_segment_tree(InputIt first, InputIt last, Reducer reducer = {},
-                          Mapper mapper = {}, const Allocator& allocator = {})
+  plain_segment_tree(InputIt first, InputIt last, Reducer reducer = {},
+                     Mapper mapper = {}, const Allocator& allocator = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
         data_(first, last, allocator) {
@@ -235,23 +234,22 @@ class node_based_segment_tree {
 
   // Time complexity - O(n).
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
-  node_based_segment_tree(InputIt first, InputIt last,
-                          const Allocator& allocator)
+  plain_segment_tree(InputIt first, InputIt last, const Allocator& allocator)
       : data_(first, last, allocator) {
     build_tree();
   }
 
   // Time complexity - O(n).
-  node_based_segment_tree(const node_based_segment_tree& other,
-                          const Allocator& allocator = {})
+  plain_segment_tree(const plain_segment_tree& other,
+                     const Allocator& allocator = {})
       : reducer_(other.reducer_),
         mapper_(other.mapper_),
         data_(other.data_, allocator) {
     build_tree();
   }
 
-  node_based_segment_tree(node_based_segment_tree&& other,
-                          const Allocator& allocator = {}) noexcept
+  plain_segment_tree(plain_segment_tree&& other,
+                     const Allocator& allocator = {}) noexcept
       : reducer_(std::move(other.reducer_)),
         mapper_(std::move(other.mapper_)),
         data_(std::move(other.data_), allocator),
@@ -259,9 +257,8 @@ class node_based_segment_tree {
         tails_(std::move(other.tails_)) {}
 
   // Time complexity - O(n).
-  node_based_segment_tree(std::initializer_list<T> init_list,
-                          Reducer reducer = {}, Mapper mapper = {},
-                          const Allocator& alloc = {})
+  plain_segment_tree(std::initializer_list<T> init_list, Reducer reducer = {},
+                     Mapper mapper = {}, const Allocator& alloc = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
         data_(init_list, alloc) {
@@ -269,20 +266,19 @@ class node_based_segment_tree {
   }
 
   // Time complexity - O(n).
-  node_based_segment_tree(std::initializer_list<T> init_list,
-                          const Allocator& alloc)
+  plain_segment_tree(std::initializer_list<T> init_list, const Allocator& alloc)
       : data_(init_list, alloc) {
     build_tree();
   }
 
   // Time complexity - O(n).
-  node_based_segment_tree& operator=(const node_based_segment_tree& other) {
+  plain_segment_tree& operator=(const plain_segment_tree& other) {
     data_ = other.data_;
     rebuild_tree();
     return *this;
   }
 
-  node_based_segment_tree& operator=(node_based_segment_tree&& other) noexcept {
+  plain_segment_tree& operator=(plain_segment_tree&& other) noexcept {
     reducer_ = std::move(other.reducer_);
     mapper_ = std::move(other.mapper_);
     data_ = std::move(other.data_);
@@ -292,7 +288,7 @@ class node_based_segment_tree {
   }
 
   // Time complexity - O(n).
-  node_based_segment_tree& operator=(std::initializer_list<T> init_list) {
+  plain_segment_tree& operator=(std::initializer_list<T> init_list) {
     data_ = init_list;
     rebuild_tree();
     return *this;
@@ -454,7 +450,7 @@ class node_based_segment_tree {
   }
 
   // Time complexity - O(1).
-  void swap(node_based_segment_tree& other) noexcept {
+  void swap(plain_segment_tree& other) noexcept {
     auto tmp = std::move(other);
     other = std::move(*this);
     *this = std::move(tmp);
@@ -468,32 +464,32 @@ class node_based_segment_tree {
   }
 
   template <typename R, typename M, typename A>
-  bool operator==(const node_based_segment_tree<T, R, M, A>& other) const {
+  bool operator==(const plain_segment_tree<T, R, M, A>& other) const {
     return data_ == other.data_;
   }
 
   template <typename R, typename M, typename A>
-  bool operator!=(const node_based_segment_tree<T, R, M, A>& other) const {
+  bool operator!=(const plain_segment_tree<T, R, M, A>& other) const {
     return data_ != other.data_;
   }
 
   template <typename R, typename M, typename A>
-  bool operator<(const node_based_segment_tree<T, R, M, A>& other) const {
+  bool operator<(const plain_segment_tree<T, R, M, A>& other) const {
     return data_ < other.data_;
   }
 
   template <typename R, typename M, typename A>
-  bool operator<=(const node_based_segment_tree<T, R, M, A>& other) const {
+  bool operator<=(const plain_segment_tree<T, R, M, A>& other) const {
     return data_ <= other.data_;
   }
 
   template <typename R, typename M, typename A>
-  bool operator>(const node_based_segment_tree<T, R, M, A>& other) const {
+  bool operator>(const plain_segment_tree<T, R, M, A>& other) const {
     return data_ > other.data_;
   }
 
   template <typename R, typename M, typename A>
-  bool operator>=(const node_based_segment_tree<T, R, M, A>& other) const {
+  bool operator>=(const plain_segment_tree<T, R, M, A>& other) const {
     return data_ >= other.data_;
   }
 
