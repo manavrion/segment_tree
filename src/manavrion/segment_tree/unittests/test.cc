@@ -19,6 +19,9 @@ template <typename T, typename Reducer, typename Mapper>
 using PlainSegmentTree =
     plain_segment_tree<T, Reducer, Mapper, std::allocator<T>>;
 
+template <typename T, typename Reducer, typename Mapper>
+using SegmentTree = segment_tree<T, Reducer, Mapper, std::allocator<T>>;
+
 template <template <typename, typename, typename> typename S>
 void TestSimpleSegmentTree() {
   using namespace manavrion::segment_tree::functors;
@@ -40,3 +43,5 @@ void TestSimpleSegmentTree() {
 }
 
 TEST(PlainSegmentTree, Test) { TestSimpleSegmentTree<PlainSegmentTree>(); }
+
+TEST(SegmentTree, Test) { TestSimpleSegmentTree<SegmentTree>(); }
