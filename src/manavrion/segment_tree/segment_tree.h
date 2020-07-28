@@ -10,6 +10,7 @@
 #include <numeric>
 #include <queue>
 #include <range/v3/view/filter.hpp>
+#include <stack>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -55,57 +56,10 @@ class segment_tree {
   using iterator = typename container_type::iterator;
   using reverse_iterator = typename container_type::reverse_iterator;
 
-  struct node_t;
-
-  struct node_t {
-    struct leaf_data_t {
-      leaf_data_t(std::unique_ptr<value_type> value)
-          : value_(std::move(value)) {
-        assert(value_);
-      }
-
-      std::unique_ptr<value_type> value_;
-      node_t* prev_ = nullptr;
-      node_t* next_ = nullptr;
-    };
-
-    struct regular_data_t {
-      regular_data_t(std::unique_ptr<reduced_type> value,
-                     std::unique_ptr<node_t> left,
-                     std::unique_ptr<node_t> right, node_t* base)
-          : value_(std::move(value)),
-            left_(std::move(left)),
-            right_(std::move(right)) {
-        assert(value_);
-        assert(left_);
-        assert(right_);
-        // Nodes must be adjacent.
-        assert(left_->last_index_ == right_->first_index_);
-        left_->parent_ = base;
-        right_->parent_ = base;
-      }
-
-      std::unique_ptr<reduced_type> value_;
-      std::unique_ptr<node_t> left_;
-      std::unique_ptr<node_t> right_;
-    };
-
-   private:
-    size_t first_index_;
-    size_t last_index_;
-    node_t* parent_ = nullptr;
-    std::variant<leaf_data_t, regular_data_t> data_;
-
-    decltype(auto) value(const Mapper& mapper) const {
-      return std::visit(
-          details::overloaded{[&](const leaf_data_t& arg) -> decltype(auto) {
-                                return mapper(*arg.value_);
-                              },
-                              [](const regular_data_t& arg) -> decltype(auto) {
-                                return *arg.value_;
-                              }},
-          data_);
-    }
+  class node_t {
+    // Available only for copy_tree.
+    node_t() {}
+    friend class segment_tree;
 
    public:
     // Creates leaf.
@@ -153,6 +107,59 @@ class segment_tree {
               }},
           data_);
     }
+
+   private:
+    decltype(auto) value(const Mapper& mapper) const {
+      return std::visit(
+          details::overloaded{[&](const leaf_data_t& arg) -> decltype(auto) {
+                                return mapper(*arg.value_);
+                              },
+                              [](const regular_data_t& arg) -> decltype(auto) {
+                                return *arg.value_;
+                              }},
+          data_);
+    }
+
+   private:
+    struct leaf_data_t {
+     public:
+      leaf_data_t(std::unique_ptr<value_type> value)
+          : value_(std::move(value)) {
+        assert(value_);
+      }
+
+      std::unique_ptr<value_type> value_;
+      node_t* prev_ = nullptr;
+      node_t* next_ = nullptr;
+    };
+
+    struct regular_data_t {
+     public:
+      regular_data_t(std::unique_ptr<reduced_type> value,
+                     std::unique_ptr<node_t> left,
+                     std::unique_ptr<node_t> right, node_t* base)
+          : value_(std::move(value)),
+            left_(std::move(left)),
+            right_(std::move(right)) {
+        assert(value_);
+        assert(left_);
+        assert(right_);
+        // Nodes must be adjacent.
+        assert(left_->last_index_ == right_->first_index_);
+        left_->parent_ = base;
+        right_->parent_ = base;
+      }
+
+      std::unique_ptr<reduced_type> value_;
+      std::unique_ptr<node_t> left_;
+      std::unique_ptr<node_t> right_;
+    };
+
+   private:
+    size_t first_index_;
+    size_t last_index_;
+    node_t* parent_ = nullptr;
+    std::variant<leaf_data_t, regular_data_t> data_;
   };
 
   void rebuild_tree() {
@@ -198,6 +205,25 @@ class segment_tree {
       head_ = std::move(line.front());
     }
   }
+
+  // Time complexity - O(k) where k is count of nodes.
+  void copy_tree(const std::unique_ptr<node_t>& other_head) {
+#if 0
+    std::stack<std::pair<node_t*, const node_t*>> st;
+    if (other_head) {
+      head_ = std::make_unique<node_t>();
+      st.emplace(head_.get(), other_head.get());
+    }
+
+    while (!st.empty()) {
+      auto [node, other_node] = st.top();
+      st.pop();
+      // node_t part
+      node->first_index_ = other_node->first_index_;
+    }
+#endif
+  }
+
 #if 0
   // Updates unique element.
   // Time complexity - O(log n).
@@ -277,15 +303,13 @@ class segment_tree {
     build_tree(first, last);
   }
 
-#if 0
-  // Time complexity - O(n).
+  // Time complexity - O(k) where k is count of nodes.
   segment_tree(const segment_tree& other, const Allocator& allocator = {})
       : reducer_(other.reducer_),
         mapper_(other.mapper_),
         allocator_(allocator) {
-    build_tree(other.begin(), other.end());
+    copy_tree(other.head_);
   }
-#endif
 
   segment_tree(segment_tree&& other, const Allocator& allocator = {}) noexcept
       : reducer_(std::move(other.reducer_)),

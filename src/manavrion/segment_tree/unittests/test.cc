@@ -66,5 +66,6 @@ void TestSimpleSegmentTreeSpecial() {
 
 TEST(SegmentTree, Test) {
   segment_tree<int> st = {0, 1, 2, 3, 4};
+  segment_tree<int> st2 = st;
   // TestSimpleSegmentTreeSpecial<SegmentTree>();
 }
