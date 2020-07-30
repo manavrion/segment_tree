@@ -56,7 +56,7 @@ void TestSimpleSegmentTreeSpecial() {
   OperatorAssignTest<SegmentTree>();
   MethodAssignTest<SegmentTree>();
   MethodGetAllocatorTest<SegmentTree>();
-  // MethodElementAccess<SegmentTree>();
+  MethodElementAccess<SegmentTree>();
   // MethodIterators<SegmentTree>();
   // MethodCapacity<SegmentTree>();
   // MethodModifiers<SegmentTree>();

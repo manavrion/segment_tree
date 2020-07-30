@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <variant>
 #include <vector>
+#include <stdexcept>
 
 #include "details.h"
 #include "functors.h"
@@ -138,6 +139,10 @@ class segment_tree {
       return first <= first_index_ && last_index_ <= last;
     }
 
+    bool contains(size_t index) const {
+      return first_index_ <= index && index < last_index_;
+    }
+
     decltype(auto) value(const Mapper& mapper) const {
       return std::visit(
           details::overloaded{[&](const leaf_data_t& arg) -> decltype(auto) {
@@ -237,6 +242,30 @@ class segment_tree {
           node->data_, other_node->data_);
     }
     back_ = prev_leaf;
+  }
+
+  // Time complexity - O(log n). O(1) in best case.
+  const value_type* get(size_t index) const {
+    const value_type* result = nullptr;
+    auto node = head_.get();
+    while (node) {
+      std::visit(details::overloaded{
+        [index, &node, &result](const leaf_data_t& arg){
+          if (node->contains(index)) {
+            result = arg.value_.get();
+          }
+          node = nullptr;
+        },
+        [index, &node](const regular_data_t& arg){
+          if (arg.left_->contains(index)) {
+            node = arg.left_.get();
+          } else {
+            node = arg.right_.get();
+          }
+        }
+      }, node->data_);
+    }
+    return result;
   }
 
 #if 0
@@ -391,26 +420,33 @@ class segment_tree {
   [[nodiscard]] allocator_type get_allocator() const noexcept {
     return allocator_;
   }
-#if 0
-  // Time complexity - O(1).
+
+  // Time complexity - O(log n). O(1) in best case.
   [[nodiscard]] const_reference at(size_type pos) const {
-    return data_.at(pos);
+    if (auto ptr = get(pos)) {
+      return *ptr;
+    }
+    throw std::out_of_range("out_of_range at segment_tree");
   }
 
-  // Time complexity - O(1).
+  // Time complexity - O(log n). O(1) in best case.
   [[nodiscard]] const_reference operator[](size_type pos) const {
-    assert(pos < data_.size());
-    return data_[pos];
+    assert(pos < size());
+    return *get(pos);
   }
 
   // Time complexity - O(1).
-  [[nodiscard]] const_reference front() const { return data_.front(); }
+  [[nodiscard]] const_reference front() const {
+    assert(front_);
+    return *std::get<leaf_data_t>(front_->data_).value_;
+  }
 
   // Time complexity - O(1).
-  [[nodiscard]] const_reference back() const { return data_.back(); }
-
-  // Time complexity - O(1).
-  [[nodiscard]] const T* data() const noexcept { return data_.data(); }
+  [[nodiscard]] const_reference back() const {
+    assert(back_);
+    return *std::get<leaf_data_t>(back_->data_).value_;
+  }
+#if 0
 
   // Time complexity - O(1).
   [[nodiscard]] const_iterator begin() const noexcept { return data_.begin(); }

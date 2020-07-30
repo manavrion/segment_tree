@@ -100,9 +100,6 @@ void MethodElementAccess() {
 
   EXPECT_EQ(segment_tree.back(), 2);
   EXPECT_EQ(const_segment_tree.back(), 2);
-
-  EXPECT_EQ(segment_tree.data()[0], 0);
-  EXPECT_EQ(segment_tree.data()[2], 2);
 }
 
 template <typename SegmentTree>
