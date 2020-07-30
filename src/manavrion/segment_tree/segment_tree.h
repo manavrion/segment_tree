@@ -369,18 +369,19 @@ class segment_tree {
     build_tree(init_list.begin(), init_list.end());
     return *this;
   }
-#if 0
+
   // Time complexity - O(1).
   void assign(size_type count, const T& value) {
-    data_.assign(count, value);
-    rebuild_tree();
+    head_ =
+        std::make_unique<node_t>(std::make_unique<value_type>(value), 0, count);
+    front_ = head_.get();
+    back_ = head_.get();
   }
 
   // Time complexity - O(n).
   template <class InputIt, typename = details::require_input_iter<InputIt>>
   void assign(InputIt first, InputIt last) {
-    data_.assign(first, last);
-    rebuild_tree();
+    build_tree(first, last);
   }
 
   // Time complexity - O(n).
@@ -388,9 +389,9 @@ class segment_tree {
 
   // Time complexity - O(1).
   [[nodiscard]] allocator_type get_allocator() const noexcept {
-    return data_.get_allocator();
+    return allocator_;
   }
-
+#if 0
   // Time complexity - O(1).
   [[nodiscard]] const_reference at(size_type pos) const {
     return data_.at(pos);
