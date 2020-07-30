@@ -56,12 +56,54 @@ class segment_tree {
   using iterator = typename container_type::iterator;
   using reverse_iterator = typename container_type::reverse_iterator;
 
-  class node_t {
-    // Available only for copy_tree.
-    node_t() {}
-    friend class segment_tree;
+  class node_t;
 
-   public:
+  struct leaf_data_t {
+    // Copies one node with out relations or childs.
+    leaf_data_t(const leaf_data_t& other)
+        : value_(std::make_unique<value_type>(*other.value_)) {}
+
+    leaf_data_t(std::unique_ptr<value_type> value) : value_(std::move(value)) {
+      assert(value_);
+    }
+
+    std::unique_ptr<value_type> value_;
+    node_t* prev_ = nullptr;
+    node_t* next_ = nullptr;
+  };
+
+  struct regular_data_t {
+    // Copies one node with out relations or childs.
+    regular_data_t(const regular_data_t& other)
+        : value_(std::make_unique<value_type>(*other.value_)) {}
+
+    regular_data_t(std::unique_ptr<reduced_type> value,
+                   std::unique_ptr<node_t> left, std::unique_ptr<node_t> right,
+                   node_t* base)
+        : value_(std::move(value)),
+          left_(std::move(left)),
+          right_(std::move(right)) {
+      assert(value_);
+      assert(left_);
+      assert(right_);
+      // Nodes must be adjacent.
+      assert(left_->last_index_ == right_->first_index_);
+      left_->parent_ = base;
+      right_->parent_ = base;
+    }
+
+    std::unique_ptr<reduced_type> value_;
+    std::unique_ptr<node_t> left_;
+    std::unique_ptr<node_t> right_;
+  };
+
+  struct node_t {
+    // Copies one node with out relations or childs.
+    node_t(const node_t& other)
+        : first_index_(other.first_index_),
+          last_index_(other.last_index_),
+          data_(other.data_) {}
+
     // Creates leaf.
     node_t(std::unique_ptr<value_type> value, size_t first_index,
            size_t last_index)
@@ -96,19 +138,6 @@ class segment_tree {
       return first <= first_index_ && last_index_ <= last;
     }
 
-    auto childs() {
-      return std::visit(
-          details::overloaded{
-              [&](leaf_data_t& arg) { return std::array<node_t*, 0>{}; },
-              [](regular_data_t& arg) {
-                assert(arg.left_ && arg.right_);
-                return std::array<node_t*, 2>{arg.left_.get(),
-                                              arg.right_.get()};
-              }},
-          data_);
-    }
-
-   private:
     decltype(auto) value(const Mapper& mapper) const {
       return std::visit(
           details::overloaded{[&](const leaf_data_t& arg) -> decltype(auto) {
@@ -120,59 +149,15 @@ class segment_tree {
           data_);
     }
 
-   private:
-    struct leaf_data_t {
-     public:
-      leaf_data_t(std::unique_ptr<value_type> value)
-          : value_(std::move(value)) {
-        assert(value_);
-      }
-
-      std::unique_ptr<value_type> value_;
-      node_t* prev_ = nullptr;
-      node_t* next_ = nullptr;
-    };
-
-    struct regular_data_t {
-     public:
-      regular_data_t(std::unique_ptr<reduced_type> value,
-                     std::unique_ptr<node_t> left,
-                     std::unique_ptr<node_t> right, node_t* base)
-          : value_(std::move(value)),
-            left_(std::move(left)),
-            right_(std::move(right)) {
-        assert(value_);
-        assert(left_);
-        assert(right_);
-        // Nodes must be adjacent.
-        assert(left_->last_index_ == right_->first_index_);
-        left_->parent_ = base;
-        right_->parent_ = base;
-      }
-
-      std::unique_ptr<reduced_type> value_;
-      std::unique_ptr<node_t> left_;
-      std::unique_ptr<node_t> right_;
-    };
-
-   private:
     size_t first_index_;
     size_t last_index_;
     node_t* parent_ = nullptr;
     std::variant<leaf_data_t, regular_data_t> data_;
   };
 
-  void rebuild_tree() {
-    head_.reset();
-    build_tree();
-  }
-
   // Creates segment tree nodes, time complexity - O(n).
   template <typename InputIt>
   void build_tree(InputIt first, InputIt last) {
-    // This method can be called only in ctor.
-    assert(!head_);
-
     std::vector<std::unique_ptr<node_t>> line;
     const size_t size = std::distance(first, last);
     line.reserve(size);
@@ -183,6 +168,11 @@ class segment_tree {
           std::make_unique<value_type>(*it), i, i + 1));
     }
     assert(line.size() == size);
+
+    if (!line.empty()) {
+      front_ = line.front().get();
+      back_ = line.back().get();
+    }
 
     while (line.size() > 1) {
       std::vector<std::unique_ptr<node_t>> new_line;
@@ -208,20 +198,45 @@ class segment_tree {
 
   // Time complexity - O(k) where k is count of nodes.
   void copy_tree(const std::unique_ptr<node_t>& other_head) {
-#if 0
     std::stack<std::pair<node_t*, const node_t*>> st;
     if (other_head) {
-      head_ = std::make_unique<node_t>();
+      head_ = std::make_unique<node_t>(*other_head);
       st.emplace(head_.get(), other_head.get());
     }
+
+    node_t* prev_leaf = nullptr;
 
     while (!st.empty()) {
       auto [node, other_node] = st.top();
       st.pop();
-      // node_t part
-      node->first_index_ = other_node->first_index_;
+
+      std::visit(
+          details::overloaded{
+              [this, &prev_leaf, node = node](leaf_data_t& leaf,
+                                              const leaf_data_t& other_leaf) {
+                if (!prev_leaf) {
+                  front_ = node;
+                }
+                if (prev_leaf) {
+                  std::get<leaf_data_t>(prev_leaf->data_).next_ = node;
+                  leaf.prev_ = prev_leaf;
+                }
+                prev_leaf = node;
+              },
+              [&st, node = node](regular_data_t& regular,
+                                 const regular_data_t& other_regular) {
+                regular.left_ = std::make_unique<node_t>(*other_regular.left_);
+                regular.right_ =
+                    std::make_unique<node_t>(*other_regular.right_);
+                regular.left_->parent_ = node;
+                regular.right_->parent_ = node;
+                st.emplace(regular.right_.get(), other_regular.right_.get());
+                st.emplace(regular.left_.get(), other_regular.left_.get());
+              },
+              [](auto&&, auto&&) { assert(false); }},
+          node->data_, other_node->data_);
     }
-#endif
+    back_ = prev_leaf;
   }
 
 #if 0
@@ -315,7 +330,9 @@ class segment_tree {
       : reducer_(std::move(other.reducer_)),
         mapper_(std::move(other.mapper_)),
         allocator_(allocator),
-        head_(std::move(other.head_)) {}
+        head_(std::move(other.head_)),
+        front_(other.front_),
+        back_(other.back_) {}
 
   // Time complexity - O(n).
   segment_tree(std::initializer_list<T> init_list, Reducer reducer = {},
@@ -331,31 +348,29 @@ class segment_tree {
       : allocator_(allocator) {
     build_tree(init_list.begin(), init_list.end());
   }
-#if 0
+
   // Time complexity - O(n).
   segment_tree& operator=(const segment_tree& other) {
-    data_ = other.data_;
-    rebuild_tree();
+    copy_tree(other.head_);
     return *this;
   }
 
   segment_tree& operator=(segment_tree&& other) noexcept {
     reducer_ = std::move(other.reducer_);
     mapper_ = std::move(other.mapper_);
-    data_ = std::move(other.data_);
     head_ = std::move(other.head_);
-    tails_ = std::move(other.tails_);
+    front_ = std::move(other.front_);
+    back_ = std::move(other.back_);
     return *this;
   }
 
   // Time complexity - O(n).
   segment_tree& operator=(std::initializer_list<T> init_list) {
-    data_ = init_list;
-    rebuild_tree();
+    build_tree(init_list.begin(), init_list.end());
     return *this;
   }
-
-  // Time complexity - O(n). Can be reduced to O(1) with dynamic_segment_tree.
+#if 0
+  // Time complexity - O(1).
   void assign(size_type count, const T& value) {
     data_.assign(count, value);
     rebuild_tree();
@@ -429,30 +444,37 @@ class segment_tree {
   [[nodiscard]] const_reverse_iterator crend() const noexcept {
     return data_.crend();
   }
-
+#endif
   // Time complexity - O(1).
   [[nodiscard]] bool empty() const noexcept {
-    if (data_.empty()) {
-      assert(!head_);
-      assert(tails_.empty());
+    if (!head_) {
+      assert(!front_);
+      assert(!back_);
     }
-    return data_.empty();
+    return !head_;
   }
 
   // Time complexity - O(1).
-  [[nodiscard]] size_type size() const noexcept { return data_.size(); }
+  [[nodiscard]] size_type size() const noexcept {
+    assert(front_);
+    assert(back_);
+    return back_->last_index_ - front_->first_index_;
+  }
 
   // Time complexity - O(1).
-  [[nodiscard]] size_type max_size() const noexcept { return data_.max_size(); }
+  [[nodiscard]] size_type max_size() const noexcept {
+    return std::numeric_limits<size_t>::max();
+  }
 
   // Time complexity - O(n).
   void clear() noexcept {
-    data_.clear();
     head_.reset();
-    tails_.clear();
+    front_ = nullptr;
+    back_ = nullptr;
     assert(empty());
   }
 
+#if 0
   // Time complexity - O(n).
   const_iterator insert(const_iterator pos, const T& value) {
     details::scoped{[this] { rebuild_tree(); }};
@@ -641,6 +663,8 @@ class segment_tree {
   Allocator allocator_;
 
   std::unique_ptr<node_t> head_;
+  node_t* front_ = nullptr;
+  node_t* back_ = nullptr;
 };
 
 }  // namespace manavrion::segment_tree
