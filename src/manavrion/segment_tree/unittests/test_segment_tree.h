@@ -9,19 +9,18 @@
 #include <memory>
 #include <numeric>
 #include <queue>
-#include <range/v3/view/filter.hpp>
 #include <type_traits>
 #include <vector>
 
-#include "details.h"
-#include "functors.h"
+#include "manavrion/segment_tree/details.h"
+#include "manavrion/segment_tree/functors.h"
 
 namespace manavrion::segment_tree {
 
 template <typename T, typename Reducer = functors::default_reducer,
           typename Mapper = functors::deduce_mapper<T, Reducer>,
           typename Allocator = std::allocator<T>>
-class plain_segment_tree {
+class test_segment_tree {
   static_assert(std::is_invocable_v<Mapper, T>);
   using mapper_result = std::decay_t<std::invoke_result_t<Mapper, T>>;
   static_assert(std::is_invocable_v<Reducer, mapper_result, mapper_result>);
@@ -55,7 +54,7 @@ class plain_segment_tree {
   using reverse_iterator = typename container_type::reverse_iterator;
 
   iterator remove_const(const const_iterator it) {
-    return std::next(data_.begin(), std::distance(data_.begin(), it));
+    return std::next(data_.begin(), std::distance(data_.cbegin(), it));
   }
 
   struct node_t {
@@ -208,24 +207,24 @@ class plain_segment_tree {
   }
 
   void update(const_iterator first, const_iterator last) {
-    update(std::distance(data_.begin(), first),
-           std::distance(data_.begin(), last));
+    update(std::distance(data_.cbegin(), first),
+           std::distance(data_.cbegin(), last));
   }
 
  public:
-  plain_segment_tree() = default;
+  test_segment_tree() = default;
 
-  explicit plain_segment_tree(const Allocator& allocator) : data_(allocator) {}
+  explicit test_segment_tree(const Allocator& allocator) : data_(allocator) {}
 
-  explicit plain_segment_tree(Reducer reducer, Mapper mapper = {},
-                              const Allocator& allocator = {})
+  explicit test_segment_tree(Reducer reducer, Mapper mapper = {},
+                             const Allocator& allocator = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
         data_(allocator) {}
 
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
-  plain_segment_tree(InputIt first, InputIt last, Reducer reducer = {},
-                     Mapper mapper = {}, const Allocator& allocator = {})
+  test_segment_tree(InputIt first, InputIt last, Reducer reducer = {},
+                    Mapper mapper = {}, const Allocator& allocator = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
         data_(first, last, allocator) {
@@ -234,22 +233,22 @@ class plain_segment_tree {
 
   // Time complexity - O(n).
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
-  plain_segment_tree(InputIt first, InputIt last, const Allocator& allocator)
+  test_segment_tree(InputIt first, InputIt last, const Allocator& allocator)
       : data_(first, last, allocator) {
     build_tree();
   }
 
   // Time complexity - O(n).
-  plain_segment_tree(const plain_segment_tree& other,
-                     const Allocator& allocator = {})
+  test_segment_tree(const test_segment_tree& other,
+                    const Allocator& allocator = {})
       : reducer_(other.reducer_),
         mapper_(other.mapper_),
         data_(other.data_, allocator) {
     build_tree();
   }
 
-  plain_segment_tree(plain_segment_tree&& other,
-                     const Allocator& allocator = {}) noexcept
+  test_segment_tree(test_segment_tree&& other,
+                    const Allocator& allocator = {}) noexcept
       : reducer_(std::move(other.reducer_)),
         mapper_(std::move(other.mapper_)),
         data_(std::move(other.data_), allocator),
@@ -257,8 +256,8 @@ class plain_segment_tree {
         tails_(std::move(other.tails_)) {}
 
   // Time complexity - O(n).
-  plain_segment_tree(std::initializer_list<T> init_list, Reducer reducer = {},
-                     Mapper mapper = {}, const Allocator& alloc = {})
+  test_segment_tree(std::initializer_list<T> init_list, Reducer reducer = {},
+                    Mapper mapper = {}, const Allocator& alloc = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
         data_(init_list, alloc) {
@@ -266,19 +265,19 @@ class plain_segment_tree {
   }
 
   // Time complexity - O(n).
-  plain_segment_tree(std::initializer_list<T> init_list, const Allocator& alloc)
+  test_segment_tree(std::initializer_list<T> init_list, const Allocator& alloc)
       : data_(init_list, alloc) {
     build_tree();
   }
 
   // Time complexity - O(n).
-  plain_segment_tree& operator=(const plain_segment_tree& other) {
+  test_segment_tree& operator=(const test_segment_tree& other) {
     data_ = other.data_;
     rebuild_tree();
     return *this;
   }
 
-  plain_segment_tree& operator=(plain_segment_tree&& other) noexcept {
+  test_segment_tree& operator=(test_segment_tree&& other) noexcept {
     reducer_ = std::move(other.reducer_);
     mapper_ = std::move(other.mapper_);
     data_ = std::move(other.data_);
@@ -288,7 +287,7 @@ class plain_segment_tree {
   }
 
   // Time complexity - O(n).
-  plain_segment_tree& operator=(std::initializer_list<T> init_list) {
+  test_segment_tree& operator=(std::initializer_list<T> init_list) {
     data_ = init_list;
     rebuild_tree();
     return *this;
@@ -450,7 +449,7 @@ class plain_segment_tree {
   }
 
   // Time complexity - O(1).
-  void swap(plain_segment_tree& other) noexcept {
+  void swap(test_segment_tree& other) noexcept {
     auto tmp = std::move(other);
     other = std::move(*this);
     *this = std::move(tmp);
@@ -464,32 +463,32 @@ class plain_segment_tree {
   }
 
   template <typename R, typename M, typename A>
-  bool operator==(const plain_segment_tree<T, R, M, A>& other) const {
+  bool operator==(const test_segment_tree<T, R, M, A>& other) const {
     return data_ == other.data_;
   }
 
   template <typename R, typename M, typename A>
-  bool operator!=(const plain_segment_tree<T, R, M, A>& other) const {
+  bool operator!=(const test_segment_tree<T, R, M, A>& other) const {
     return data_ != other.data_;
   }
 
   template <typename R, typename M, typename A>
-  bool operator<(const plain_segment_tree<T, R, M, A>& other) const {
+  bool operator<(const test_segment_tree<T, R, M, A>& other) const {
     return data_ < other.data_;
   }
 
   template <typename R, typename M, typename A>
-  bool operator<=(const plain_segment_tree<T, R, M, A>& other) const {
+  bool operator<=(const test_segment_tree<T, R, M, A>& other) const {
     return data_ <= other.data_;
   }
 
   template <typename R, typename M, typename A>
-  bool operator>(const plain_segment_tree<T, R, M, A>& other) const {
+  bool operator>(const test_segment_tree<T, R, M, A>& other) const {
     return data_ > other.data_;
   }
 
   template <typename R, typename M, typename A>
-  bool operator>=(const plain_segment_tree<T, R, M, A>& other) const {
+  bool operator>=(const test_segment_tree<T, R, M, A>& other) const {
     return data_ >= other.data_;
   }
 
@@ -497,7 +496,6 @@ class plain_segment_tree {
   // Time complexity - O(log n).
   [[nodiscard]] reduced_type query(size_t first_index,
                                    size_t last_index) const {
-    assert(head_);
     assert(first_index <= last_index);
     assert(last_index <= data_.size());
     //
@@ -506,11 +504,12 @@ class plain_segment_tree {
     std::vector<node_t*> q;
     results.reserve(max_size);
     q.reserve(max_size);
-
-    q.emplace_back(head_.get());
+    if (head_) {
+      q.emplace_back(head_.get());
+    }
+    
     while (!q.empty()) {
       assert(q.size() <= max_size);
-      assert(results.size() <= max_size);
 
       auto node = q.back();
       q.pop_back();
@@ -522,12 +521,13 @@ class plain_segment_tree {
         continue;
       }
       if (node->is_leaf()) {
-        if (first_index == node->first_index()) {
-          results.emplace_back(mapper_(data_[first_index]));
+        if (first_index <= node->first_index() &&
+            node->first_index() < last_index) {
+          results.emplace_back(mapper_(data_[node->first_index()]));
         }
-        if (first_index == node->first_index() + 1) {
-          assert(first_index < node->last_index());
-          results.emplace_back(mapper_(data_[first_index]));
+        if (first_index <= (node->first_index() + 1) &&
+            (node->first_index() + 1) < last_index) {
+          results.emplace_back(mapper_(data_[node->first_index() + 1]));
         }
         continue;
       }
@@ -535,7 +535,9 @@ class plain_segment_tree {
         q.emplace_back(child);
       }
     }
-    assert(!results.empty());
+    if (results.empty()) {
+      return {};
+    }
     reduced_type result = std::move(results.back());
     results.pop_back();
     for (auto& node : results) {

@@ -28,7 +28,10 @@ void SimpleFunctorTest() {
   st.update(0, 11);
   st.update(1, 7);
 
-  // actual state {11, 7, 5, 2, 1, 6, 7, 8, 9, 10}
+  SegmentTree<int, decltype(min),
+              manavrion::segment_tree::functors::default_mapper>
+      st2({11, 7, 5, 2, 1, 6, 7, 8, 9, 10}, min);
+  EXPECT_EQ(st, st2);
 
   EXPECT_EQ(st.query(0, 10), 1);
   EXPECT_EQ(st.query(3, 6), 1);
