@@ -455,36 +455,6 @@ class segment_tree {
     update(index);
   }
 
-  template <typename R, typename M, typename A>
-  bool operator==(const segment_tree<T, R, M, A>& other) const {
-    return data_ == other.data_;
-  }
-
-  template <typename R, typename M, typename A>
-  bool operator!=(const segment_tree<T, R, M, A>& other) const {
-    return data_ != other.data_;
-  }
-
-  template <typename R, typename M, typename A>
-  bool operator<(const segment_tree<T, R, M, A>& other) const {
-    return data_ < other.data_;
-  }
-
-  template <typename R, typename M, typename A>
-  bool operator<=(const segment_tree<T, R, M, A>& other) const {
-    return data_ <= other.data_;
-  }
-
-  template <typename R, typename M, typename A>
-  bool operator>(const segment_tree<T, R, M, A>& other) const {
-    return data_ > other.data_;
-  }
-
-  template <typename R, typename M, typename A>
-  bool operator>=(const segment_tree<T, R, M, A>& other) const {
-    return data_ >= other.data_;
-  }
-
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).
   [[nodiscard]] reduced_type query(size_t first_index,
@@ -574,6 +544,30 @@ class segment_tree {
     update_range(first, last);
   }
 
+  template <typename T1, typename T2, typename R, typename M, typename A>
+  friend bool operator==(const segment_tree<T1, R, M, A>& lhs,
+                         const segment_tree<T2, R, M, A>& rhs);
+
+  template <typename T1, typename T2, typename R, typename M, typename A>
+  friend bool operator!=(const segment_tree<T1, R, M, A>& lhs,
+                         const segment_tree<T2, R, M, A>& rhs);
+
+  template <typename T1, typename T2, typename R, typename M, typename A>
+  friend bool operator<(const segment_tree<T1, R, M, A>& lhs,
+                        const segment_tree<T2, R, M, A>& rhs);
+
+  template <typename T1, typename T2, typename R, typename M, typename A>
+  friend bool operator<=(const segment_tree<T1, R, M, A>& lhs,
+                         const segment_tree<T2, R, M, A>& rhs);
+
+  template <typename T1, typename T2, typename R, typename M, typename A>
+  friend bool operator>(const segment_tree<T1, R, M, A>& lhs,
+                        const segment_tree<T2, R, M, A>& rhs);
+
+  template <typename T1, typename T2, typename R, typename M, typename A>
+  friend bool operator>=(const segment_tree<T1, R, M, A>& lhs,
+                         const segment_tree<T2, R, M, A>& rhs);
+
  private:
   Reducer reducer_;
   Mapper mapper_;
@@ -582,5 +576,41 @@ class segment_tree {
   std::vector<reduced_type> tree_;
   size_t shift_;
 };
+
+template <typename T1, typename T2, typename R, typename M, typename A>
+bool operator==(const segment_tree<T1, R, M, A>& lhs,
+                const segment_tree<T2, R, M, A>& rhs) {
+  return lhs.data_ == rhs.data_;
+}
+
+template <typename T1, typename T2, typename R, typename M, typename A>
+bool operator!=(const segment_tree<T1, R, M, A>& lhs,
+                const segment_tree<T2, R, M, A>& rhs) {
+  return lhs.data_ != rhs.data_;
+}
+
+template <typename T1, typename T2, typename R, typename M, typename A>
+bool operator<(const segment_tree<T1, R, M, A>& lhs,
+               const segment_tree<T2, R, M, A>& rhs) {
+  return lhs.data_ < rhs.data_;
+}
+
+template <typename T1, typename T2, typename R, typename M, typename A>
+bool operator<=(const segment_tree<T1, R, M, A>& lhs,
+                const segment_tree<T2, R, M, A>& rhs) {
+  return lhs.data_ <= rhs.data_;
+}
+
+template <typename T1, typename T2, typename R, typename M, typename A>
+bool operator>(const segment_tree<T1, R, M, A>& lhs,
+               const segment_tree<T2, R, M, A>& rhs) {
+  return lhs.data_ > rhs.data_;
+}
+
+template <typename T1, typename T2, typename R, typename M, typename A>
+bool operator>=(const segment_tree<T1, R, M, A>& lhs,
+                const segment_tree<T2, R, M, A>& rhs) {
+  return lhs.data_ >= rhs.data_;
+}
 
 }  // namespace manavrion::segment_tree
