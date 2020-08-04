@@ -54,29 +54,16 @@ class segment_tree {
   using iterator = typename container_type::iterator;
   using reverse_iterator = typename container_type::reverse_iterator;
 
-  [[nodiscard]] static size_t parent(size_t node_index) {
-    return (node_index - 1) / 2;
-  }
+  size_t parent(size_t node_index) { return (node_index - 1) / 2; }
 
-  [[nodiscard]] static size_t left_child(size_t node_index) {
-    return node_index * 2 + 1;
-  }
+  size_t left_child(size_t node_index) { return node_index * 2 + 1; }
+  size_t right_child(size_t node_index) { return node_index * 2 + 2; }
 
-  [[nodiscard]] static size_t right_child(size_t node_index) {
-    return node_index * 2 + 2;
-  }
+  bool is_left_child(size_t node_index) { return node_index % 2 != 0; }
+  bool is_right_child(size_t node_index) { return node_index % 2 == 0; }
 
-  [[nodiscard]] static bool is_left_child(size_t node_index) {
-    return node_index % 2 != 0;
-  }
-
-  [[nodiscard]] static bool is_right_child(size_t node_index) {
-    return node_index % 2 == 0;
-  }
-
-  [[nodiscard]] static size_t shift_up(size_t shift) { return shift / 2; }
-
-  [[nodiscard]] static size_t shift_down(size_t shift) { return shift * 2 + 1; }
+  size_t shift_up(size_t shift) { return shift / 2; }
+  size_t shift_down(size_t shift) { return shift * 2 + 1; }
 
   void init_tree() {
     assert(tree_.empty());
@@ -215,7 +202,7 @@ class segment_tree {
 
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).
-  [[nodiscard]] reduced_type query_impl(size_t first_index,
+  reduced_type query_impl(size_t first_index,
                                         size_t last_index) const {
     assert(first_index <= last_index);
     assert(last_index <= data_.size());
