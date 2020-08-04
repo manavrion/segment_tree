@@ -134,15 +134,22 @@ class segment_tree {
       }
     }
 
-    size_t border = tree_.size();
-    // TODO: Fix potential bug.
-    for (ssize_t i = ssize_t(shift_) - 1; i >= 0; --i) {
-      const size_t child_1 = left_child(i);
-      const size_t child_2 = right_child(i);
-      if (child_1 < border && child_2 < border) {
-        tree_[i] = reducer_(tree_[child_1], tree_[child_2]);
-      } else if (child_1 < border) {
-        tree_[i] = tree_[child_1];
+    size_t prev_node = 0;
+    size_t last_node = tree_size ? tree_size - 1 : 0;
+    size_t shift = shift_;
+
+    while (last_node != 0) {
+      prev_node = last_node;
+      last_node = parent(last_node);
+      shift = shift_up(shift);
+      for (size_t i = shift; i <= last_node; ++i) {
+        const size_t child_1 = left_child(i);
+        const size_t child_2 = right_child(i);
+        if (child_1 <= prev_node && child_2 <= prev_node) {
+          tree_[i] = reducer_(tree_[child_1], tree_[child_2]);
+        } else if (child_1 <= prev_node) {
+          tree_[i] = tree_[child_1];
+        }
       }
     }
   }
