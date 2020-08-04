@@ -206,6 +206,65 @@ class segment_tree {
                  std::distance(data_.cbegin(), last));
   }
 
+  // Make a query on [first_index, last_index) segment.
+  // Time complexity - O(log n).
+  [[nodiscard]] reduced_type query_impl(size_t first_index,
+                                        size_t last_index) const {
+    assert(first_index <= last_index);
+    assert(last_index <= data_.size());
+
+    std::optional<reduced_type> result;
+    auto add_result = [&](const auto& value) {
+      if (result) {
+        result.emplace(reducer_(std::move(*result), value));
+      } else {
+        result.emplace(value);
+      }
+    };
+
+    if (first_index < last_index && first_index % 2 != 0) {
+      assert(first_index < data_.size());
+      add_result(mapper_(data_[first_index]));
+      ++first_index;
+    }
+
+    if (first_index < last_index && last_index % 2 != 0) {
+      assert(last_index - 1 < data_.size());
+      add_result(mapper_(data_[last_index - 1]));
+      --last_index;
+    }
+
+    first_index /= 2;
+    last_index /= 2;
+    size_t shift = shift_;
+
+    while (first_index < last_index) {
+      if (first_index < last_index && is_right_child(shift + first_index)) {
+        assert(shift + first_index < tree_.size());
+        add_result(tree_[shift + first_index]);
+        ++first_index;
+      }
+      if (first_index < last_index && is_left_child(shift + last_index - 1)) {
+        assert(shift + last_index - 1 < tree_.size());
+        add_result(tree_[shift + last_index - 1]);
+        --last_index;
+      }
+      if (first_index + 1 == last_index) {
+        assert(shift + first_index < tree_.size());
+        add_result(tree_[shift + first_index]);
+        break;
+      }
+      first_index /= 2;
+      last_index /= 2;
+      shift /= 2;
+    }
+
+    if (!result) {
+      result.emplace();
+    }
+    return std::move(*result);
+  }
+
  public:
   segment_tree() = default;
 
@@ -365,7 +424,6 @@ class segment_tree {
   [[nodiscard]] bool empty() const noexcept {
     if (data_.empty()) {
       assert(tree_.empty());
-      assert(shift_ == 0);
     }
     return data_.empty();
   }
@@ -380,7 +438,6 @@ class segment_tree {
   void clear() noexcept {
     data_.clear();
     tree_.clear();
-    shift_ = 0;
     assert(empty());
   }
 
@@ -459,59 +516,7 @@ class segment_tree {
   // Time complexity - O(log n).
   [[nodiscard]] reduced_type query(size_t first_index,
                                    size_t last_index) const {
-    assert(first_index <= last_index);
-    assert(last_index <= data_.size());
-
-    std::optional<reduced_type> result;
-    auto add_result = [&](const auto& value) {
-      if (result) {
-        result.emplace(reducer_(std::move(*result), value));
-      } else {
-        result.emplace(value);
-      }
-    };
-
-    if (first_index < last_index && first_index % 2 != 0) {
-      assert(first_index < data_.size());
-      add_result(mapper_(data_[first_index]));
-      ++first_index;
-    }
-
-    if (first_index < last_index && last_index % 2 != 0) {
-      assert(last_index - 1 < data_.size());
-      add_result(mapper_(data_[last_index - 1]));
-      --last_index;
-    }
-
-    first_index /= 2;
-    last_index /= 2;
-    size_t shift = shift_;
-
-    while (first_index < last_index) {
-      if (first_index < last_index && is_right_child(shift + first_index)) {
-        assert(shift + first_index < tree_.size());
-        add_result(tree_[shift + first_index]);
-        ++first_index;
-      }
-      if (first_index < last_index && is_left_child(shift + last_index - 1)) {
-        assert(shift + last_index - 1 < tree_.size());
-        add_result(tree_[shift + last_index - 1]);
-        --last_index;
-      }
-      if (first_index + 1 == last_index) {
-        assert(shift + first_index < tree_.size());
-        add_result(tree_[shift + first_index]);
-        break;
-      }
-      first_index /= 2;
-      last_index /= 2;
-      shift /= 2;
-    }
-
-    if (!result) {
-      result.emplace();
-    }
-    return std::move(*result);
+    return query_impl(first_index, last_index);
   }
 
   // Time complexity - O(min(n, k log n)) where k is size of Range.
