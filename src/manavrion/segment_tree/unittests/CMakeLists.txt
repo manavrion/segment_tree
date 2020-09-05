@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 project(unittests)
 
-set(UNITTEST_FILES test.cc)
+set(UNITTEST_FILES examples.cc test.cc)
 
 source_group("unittests" FILES ${UNITTEST_FILES})
 
