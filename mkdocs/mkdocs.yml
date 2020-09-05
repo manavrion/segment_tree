@@ -24,7 +24,7 @@ theme:
     - instant
     - tabs
   palette:
-    scheme: slate
+    scheme: default
   icon:
     logo: fontawesome/brands/github-alt
 
