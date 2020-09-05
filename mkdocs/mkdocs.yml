@@ -1,6 +1,6 @@
 site_name: Segment tree
 
-edit_uri: edit/master/mkdocs/docs/
+edit_uri: https://github.com/manavrion/segment_tree/edit/master/mkdocs/docs/
 
 theme:
   name: material
