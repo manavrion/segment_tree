@@ -1,4 +1,4 @@
-# segment_tree
+# Segment tree
 A generic segment tree C++ header-only library.
 
 # How to build
