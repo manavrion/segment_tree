@@ -21,7 +21,6 @@ copyright: Copyright &copy; 2020 Ruslan Manaev
 theme:
   name: material
   features:
-    - instant
     - tabs
   palette:
     scheme: default
@@ -41,7 +40,8 @@ nav:
   - Examples:
     - examples/examples.md
   - Paper:
-    - paper/paper.md
+    - paper/tree.md
+    - paper/traversing.md
 
 # Extensions
 markdown_extensions:
