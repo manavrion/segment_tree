@@ -1,9 +1,9 @@
 # Segment tree
 A generic segment tree C++ header-only library.
 
-## Examples
+# Examples
 
-### Default functor
+## Default functor
 
 ```C++
 // "Min" functor will be used at segment_tree by default.
@@ -20,7 +20,7 @@ EXPECT_EQ(st, segment_tree<int>({0, 1, 5, 3, 4}));
 EXPECT_EQ(st.query(2, 5), 3);
 ```
 
-### Custom functor
+## Custom functor
 
 ```C++
 auto plus = [](auto lhs, auto rhs) { return lhs + rhs; };
@@ -30,7 +30,7 @@ segment_tree<int, decltype(plus)> st({0, 1, 2, 3, 4}, plus);
 EXPECT_EQ(st.query(2, 5), 9);
 ```
 
-### Combined functor
+## Combined functor
 
 ```C++
 // You can combine operations.

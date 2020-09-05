@@ -1,1 +1,3 @@
-site_name: My Docs
+site_name: Segment tree
+theme:
+  name: material
