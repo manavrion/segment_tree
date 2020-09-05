@@ -1,24 +1,42 @@
-site_name: Segment tree
+#
+# Copyright (C) 2020 Ruslan Manaev (manavrion@gmail.com)
+# This file is part of the segment_tree header-only library.
+#
 
+# Project information
+site_name: Segment tree
+site_url: https://manavrion.github.io/segment_tree/
+site_author: Ruslan Manaev
+site_description: A generic segment tree C++ header-only library.
+
+# Repository
+repo_name: manavrion/segment_tree
+repo_url: https://github.com/manavrion/segment_tree
 edit_uri: https://github.com/manavrion/segment_tree/edit/master/mkdocs/docs/
 
+# Copyright
+copyright: Copyright &copy; 2020 Ruslan Manaev
+
+# Configuration
 theme:
   name: material
-  palette:
-    scheme: slate
   features:
     - instant
     - tabs
+  palette:
+    scheme: slate
   icon:
     logo: fontawesome/brands/github-alt
 
+# Customization
+extra:
+  social:
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/manavrion
+
+# Page tree
 nav:
   - Home:
     - index.md
   - Examples:
     - examples/examples.md
-
-extra:
-  social:
-    - icon: fontawesome/brands/linkedin
-      link: https://www.linkedin.com/in/manavrion
