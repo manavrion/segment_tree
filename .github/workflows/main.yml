@@ -12,7 +12,7 @@ jobs:
         with:
           python-version: 3.x
       - run: pip install mkdocs-material
-      - run: mkdocs gh-deploy --force
+      - run: mkdocs gh-deploy --config-file mkdocs/mkdocs.yml --force
 
       - name: Install compiler
         run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
