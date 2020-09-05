@@ -42,7 +42,7 @@ auto reducer = [](auto lhs, auto rhs) {
 auto mapper = [](auto arg) { return std::make_pair(arg, arg); };
 
 segment_tree<int, decltype(reducer), decltype(mapper)> st({0, 1, 2, 3, 4},
-                                                            reducer, mapper);
+                                                          reducer, mapper);
 auto result = st.query(2, 5);
 EXPECT_EQ(result.first, 9);
 EXPECT_EQ(result.second, 24);
