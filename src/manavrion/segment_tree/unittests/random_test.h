@@ -46,9 +46,13 @@ void RandomTestImpl(const std::vector<int> as) {
     for (size_t last_index = first_index; last_index <= as.size();
          ++last_index) {
       int value = dist(gen);
-      test.fill(test.begin() + first_index, test.begin() + last_index, value);
-      canonical.fill(canonical.begin() + first_index,
-                     canonical.begin() + last_index, value);
+      std::fill(test.begin() + first_index, test.begin() + last_index, value);
+      test.update_range(test.begin() + first_index, test.begin() + last_index);
+
+      std::fill(canonical.begin() + first_index, canonical.begin() + last_index,
+                value);
+      canonical.update_range(canonical.begin() + first_index,
+                             canonical.begin() + last_index);
     }
   }
   make_all_query();

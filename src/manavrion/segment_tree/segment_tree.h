@@ -3,15 +3,11 @@
 // This file is part of the segment_tree header-only library.
 //
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <functional>
-#include <memory>
-#include <numeric>
-#include <optional>
-#include <queue>
+#include <iterator>
 #include <type_traits>
-#include <vector>
 
 #include "manavrion/segment_tree/details.h"
 #include "manavrion/segment_tree/functors.h"
@@ -20,7 +16,9 @@ namespace manavrion::segment_tree {
 
 template <typename T, typename Reducer = functors::default_reducer,
           typename Mapper = functors::deduce_mapper<T, Reducer>,
-          typename Allocator = std::allocator<T>>
+          typename Allocator = std::allocator<T>,
+          typename TreeAllocator =
+              std::allocator<std::decay_t<std::invoke_result_t<Mapper, T>>>>
 class segment_tree {
   static_assert(std::is_invocable_v<Mapper, T>);
   using mapper_result = std::decay_t<std::invoke_result_t<Mapper, T>>;
@@ -29,31 +27,41 @@ class segment_tree {
                 std::invoke_result_t<Reducer, mapper_result, mapper_result>,
                 mapper_result>);
 
-  using container_type = std::vector<T, Allocator>;
-
  public:
-  using value_type = T;
   using allocator_type = Allocator;
+  using value_type = T;
+  using container_type = std::vector<value_type, allocator_type>;
   using size_type = typename container_type::size_type;
   using difference_type = typename container_type::difference_type;
   using reference = typename container_type::reference;
   using const_reference = typename container_type::const_reference;
   using pointer = typename container_type::pointer;
   using const_pointer = typename container_type::const_pointer;
-
+  using iterator = typename container_type::iterator;
   using const_iterator = typename container_type::const_iterator;
+  using reverse_iterator = typename container_type::reverse_iterator;
   using const_reverse_iterator =
       typename container_type::const_reverse_iterator;
 
-  // segment_tree specific.
-  using reduced_type = mapper_result;
+  using tree_allocator_type = TreeAllocator;
+  using tree_value_type = mapper_result;
+  using tree_container_type = std::vector<tree_value_type, tree_allocator_type>;
+  using tree_size_type = typename tree_container_type::size_type;
+  using tree_difference_type = typename tree_container_type::difference_type;
+  using tree_reference = typename tree_container_type::reference;
+  using tree_const_reference = typename tree_container_type::const_reference;
+  using tree_pointer = typename tree_container_type::pointer;
+  using tree_const_pointer = typename tree_container_type::const_pointer;
+  using tree_iterator = typename tree_container_type::iterator;
+  using tree_const_iterator = typename tree_container_type::const_iterator;
+  using tree_reverse_iterator = typename tree_container_type::reverse_iterator;
+  using tree_const_reverse_iterator =
+      typename tree_container_type::const_reverse_iterator;
+
   using mapper_type = Mapper;
   using reducer_type = Reducer;
 
  private:
-  using iterator = typename container_type::iterator;
-  using reverse_iterator = typename container_type::reverse_iterator;
-
   size_t parent(size_t node_index) const { return (node_index - 1) / 2; }
 
   size_t left_child(size_t node_index) const { return node_index * 2 + 1; }
@@ -62,39 +70,13 @@ class segment_tree {
   bool is_left_child(size_t node_index) const { return node_index % 2 != 0; }
   bool is_right_child(size_t node_index) const { return node_index % 2 == 0; }
 
-  size_t shift_up(size_t shift) const { return shift / 2; }
-  size_t shift_down(size_t shift) const { return shift * 2 + 1; }
-
   void init_tree() {
     assert(tree_.empty());
-    /*
-           tree             shift   max_data_size
-            [ ]               0       1
-             0                0       2
-       1           2          1       4
-     3   4      5     6       3       8
-    7 8 9 10  11 12 13 14     7       16
-   01 23
+    const size_t n = data_.size();
+    if (n == 0) return;
 
-    */
-    const size_t data_size = data_.size();
-
-    size_t max_data_size = 1;
-    while (data_size > max_data_size) {
-      max_data_size += max_data_size;
-    }
-
-    const size_t tree_size =
-        max_data_size - 1 - (max_data_size - data_size) / 2;
-    // TODO: use uninited range.
-    tree_.resize(tree_size);
-
-    shift_ = (max_data_size - 1) / 2;
-  }
-
-  // For special methods. Only for internal use.
-  iterator remove_const(const const_iterator it) {
-    return std::next(data_.begin(), std::distance(data_.cbegin(), it));
+    shift_ = std::pow(2, std::ceil(std::log2(n))) - 1;
+    tree_.resize((shift_ + n) / 2);
   }
 
   void rebuild_tree() {
@@ -108,10 +90,9 @@ class segment_tree {
     const size_t tree_size = tree_.size();
     const size_t data_size = data_.size();
 
-    const size_t virtual_shift = shift_down(shift_);
-    for (size_t i = shift_; i < tree_size; ++i) {
-      const size_t child_1 = left_child(i) - virtual_shift;
-      const size_t child_2 = right_child(i) - virtual_shift;
+    for (size_t i = parent(shift_); i < tree_size; ++i) {
+      const size_t child_1 = left_child(i) - shift_;
+      const size_t child_2 = right_child(i) - shift_;
       if (child_1 < data_size && child_2 < data_size) {
         tree_[i] = reducer_(mapper_(data_[child_1]), mapper_(data_[child_2]));
       } else if (child_1 < data_size) {
@@ -123,12 +104,12 @@ class segment_tree {
 
     size_t prev_node = 0;
     size_t last_node = tree_size ? tree_size - 1 : 0;
-    size_t shift = shift_;
+    size_t shift = parent(shift_);
 
     while (last_node != 0) {
       prev_node = last_node;
       last_node = parent(last_node);
-      shift = shift_up(shift);
+      shift = parent(shift);
       for (size_t i = shift; i <= last_node; ++i) {
         const size_t child_1 = left_child(i);
         const size_t child_2 = right_child(i);
@@ -150,15 +131,14 @@ class segment_tree {
     }
     const size_t data_size = data_.size();
     const size_t tree_size = tree_.size();
-    const size_t virtual_shift = shift_down(shift_);
 
     assert(index < data_size);
 
-    ssize_t i = parent(virtual_shift + index);
+    ssize_t i = parent(shift_ + index);
     assert(i < tree_size);
 
-    const size_t child_1 = left_child(i) - virtual_shift;
-    const size_t child_2 = right_child(i) - virtual_shift;
+    const size_t child_1 = left_child(i) - shift_;
+    const size_t child_2 = right_child(i) - shift_;
     if (child_1 < data_size && child_2 < data_size) {
       tree_[i] = reducer_(mapper_(data_[child_1]), mapper_(data_[child_2]));
     } else if (child_1 < data_size) {
@@ -195,18 +175,13 @@ class segment_tree {
     }
   }
 
-  void update_range(const_iterator first, const_iterator last) {
-    update_range(std::distance(data_.cbegin(), first),
-                 std::distance(data_.cbegin(), last));
-  }
-
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).
-  reduced_type query_impl(size_t first_index, size_t last_index) const {
+  tree_value_type query_impl(size_t first_index, size_t last_index) const {
     assert(first_index <= last_index);
     assert(last_index <= data_.size());
 
-    std::optional<reduced_type> result;
+    std::optional<tree_value_type> result;
     auto add_result = [&](const auto& value) {
       if (result) {
         result.emplace(reducer_(std::move(*result), value));
@@ -229,7 +204,7 @@ class segment_tree {
 
     first_index /= 2;
     last_index /= 2;
-    size_t shift = shift_;
+    size_t shift = parent(shift_);
 
     while (first_index < last_index) {
       if (first_index < last_index && is_right_child(shift + first_index)) {
@@ -261,57 +236,70 @@ class segment_tree {
  public:
   segment_tree() = default;
 
-  explicit segment_tree(const Allocator& allocator) : data_(allocator) {}
+  explicit segment_tree(const Allocator& allocator,
+                        const TreeAllocator& tree_allocator = {})
+      : data_(allocator), tree_(tree_allocator) {}
 
   explicit segment_tree(Reducer reducer, Mapper mapper = {},
-                        const Allocator& allocator = {})
+                        const Allocator& allocator = {},
+                        const TreeAllocator& tree_allocator = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
-        data_(allocator) {}
+        data_(allocator),
+        tree_(tree_allocator) {}
 
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
   segment_tree(InputIt first, InputIt last, Reducer reducer = {},
-               Mapper mapper = {}, const Allocator& allocator = {})
+               Mapper mapper = {}, const Allocator& allocator = {},
+               const TreeAllocator& tree_allocator = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
-        data_(first, last, allocator) {
+        data_(first, last, allocator),
+        tree_(tree_allocator) {
     build_tree();
   }
 
   // Time complexity - O(n).
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
-  segment_tree(InputIt first, InputIt last, const Allocator& allocator)
-      : data_(first, last, allocator) {
+  segment_tree(InputIt first, InputIt last, const Allocator& allocator,
+               const TreeAllocator& tree_allocator = {})
+      : data_(first, last, allocator), tree_(tree_allocator) {
     build_tree();
   }
 
   // Time complexity - O(n).
-  segment_tree(const segment_tree& other, const Allocator& allocator = {})
+  segment_tree(const segment_tree& other, const Allocator& allocator = {},
+               const TreeAllocator& tree_allocator = {})
       : reducer_(other.reducer_),
         mapper_(other.mapper_),
-        data_(other.data_, allocator) {
+        data_(other.data_, allocator),
+        tree_(tree_allocator) {
     build_tree();
   }
 
-  segment_tree(segment_tree&& other, const Allocator& allocator = {}) noexcept
+  segment_tree(segment_tree&& other, const Allocator& allocator = {},
+               const TreeAllocator& tree_allocator = {}) noexcept
       : reducer_(std::move(other.reducer_)),
         mapper_(std::move(other.mapper_)),
         data_(std::move(other.data_), allocator),
-        tree_(std::move(other.tree_)),
-        shift_(std::move(other.shift_)) {}
+        tree_(std::move(other.tree_), tree_allocator),
+        shift_(other.shift_) {}
 
   // Time complexity - O(n).
   segment_tree(std::initializer_list<T> init_list, Reducer reducer = {},
-               Mapper mapper = {}, const Allocator& alloc = {})
+               Mapper mapper = {}, const Allocator& allocator = {},
+               const TreeAllocator& tree_allocator = {})
       : reducer_(std::move(reducer)),
         mapper_(std::move(mapper)),
-        data_(init_list, alloc) {
+        data_(init_list, allocator),
+        tree_(tree_allocator) {
     build_tree();
   }
 
   // Time complexity - O(n).
-  segment_tree(std::initializer_list<T> init_list, const Allocator& alloc)
-      : data_(init_list, alloc) {
+  segment_tree(std::initializer_list<T> init_list, const Allocator& allocator,
+               const TreeAllocator& tree_allocator = {})
+      : data_(init_list, allocator), tree_(tree_allocator) {
     build_tree();
   }
 
@@ -380,6 +368,9 @@ class segment_tree {
   [[nodiscard]] const T* data() const noexcept { return data_.data(); }
 
   // Time complexity - O(1).
+  [[nodiscard]] iterator begin() noexcept { return data_.begin(); }
+
+  // Time complexity - O(1).
   [[nodiscard]] const_iterator begin() const noexcept { return data_.begin(); }
 
   // Time complexity - O(1).
@@ -388,10 +379,16 @@ class segment_tree {
   }
 
   // Time complexity - O(1).
+  [[nodiscard]] iterator end() noexcept { return data_.end(); }
+
+  // Time complexity - O(1).
   [[nodiscard]] const_iterator end() const noexcept { return data_.end(); }
 
   // Time complexity - O(1).
   [[nodiscard]] const_iterator cend() const noexcept { return data_.cend(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] reverse_iterator rbegin() noexcept { return data_.rbegin(); }
 
   // Time complexity - O(1).
   [[nodiscard]] const_reverse_iterator rbegin() const noexcept {
@@ -402,6 +399,9 @@ class segment_tree {
   [[nodiscard]] const_reverse_iterator crbegin() const noexcept {
     return data_.crbegin();
   }
+
+  // Time complexity - O(1).
+  [[nodiscard]] reverse_iterator rend() noexcept { return data_.rend(); }
 
   // Time complexity - O(1).
   [[nodiscard]] const_reverse_iterator rend() const noexcept {
@@ -507,39 +507,15 @@ class segment_tree {
 
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(log n).
-  [[nodiscard]] reduced_type query(size_t first_index,
-                                   size_t last_index) const {
+  [[nodiscard]] tree_value_type query(size_t first_index,
+                                      size_t last_index) const {
     return query_impl(first_index, last_index);
   }
 
-  // Time complexity - O(min(n, k log n)) where k is size of Range.
-  template <typename Range>
-  const_iterator copy(const Range& range, const_iterator dist_first) {
-    const_iterator dist_last =
-        std::copy(range.begin(), range.end(), remove_const(dist_first));
-    update_range(dist_first, dist_last);
-    return dist_last;
-  }
-
-  // Time complexity - O(min(n, k log n)) where k is size of Range.
-  template <typename Range>
-  const_iterator move(Range&& range, const_iterator dist_first) {
-    const_iterator dist_last =
-        std::move(range.begin(), range.end(), remove_const(dist_first));
-    update_range(dist_first, dist_last);
-    return dist_last;
-  }
-
-  // Time complexity - O(min(n, k log n)) where k is distance(first, last).
-  void fill(const_iterator first, const_iterator last, const T& value) {
-    std::fill(remove_const(first), remove_const(last), value);
-    update_range(first, last);
-  }
-
-  template <class Generator>
-  void generate(const_iterator first, const_iterator last, Generator g) {
-    std::generate(remove_const(first), remove_const(last), g);
-    update_range(first, last);
+  // Time complexity - O(min(n, k log n)) where k is (last_index - first_index).
+  void update_range(const_iterator first, const_iterator last) {
+    update_range(std::distance(data_.cbegin(), first),
+                 std::distance(data_.cbegin(), last));
   }
 
   template <typename T1, typename T2, typename R, typename M, typename A>
@@ -569,10 +545,10 @@ class segment_tree {
  private:
   Reducer reducer_;
   Mapper mapper_;
-  std::vector<value_type, Allocator> data_;
+  std::vector<value_type, allocator_type> data_;
 
-  std::vector<reduced_type> tree_;
-  size_t shift_;
+  std::vector<tree_value_type, tree_allocator_type> tree_;
+  size_t shift_ = 0;
 };
 
 template <typename T1, typename T2, typename R, typename M, typename A>

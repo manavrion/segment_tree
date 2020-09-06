@@ -41,6 +41,8 @@ class naive_segment_tree {
   using pointer = typename container_type::pointer;
   using const_pointer = typename container_type::const_pointer;
 
+  using iterator = typename container_type::iterator;
+  using reverse_iterator = typename container_type::reverse_iterator;
   using const_iterator = typename container_type::const_iterator;
   using const_reverse_iterator =
       typename container_type::const_reverse_iterator;
@@ -51,9 +53,6 @@ class naive_segment_tree {
   using reducer_type = Reducer;
 
  private:
-  using iterator = typename container_type::iterator;
-  using reverse_iterator = typename container_type::reverse_iterator;
-
   // For special methods. Only for internal use.
   iterator remove_const(const const_iterator it) {
     return std::next(data_.begin(), std::distance(data_.cbegin(), it));
@@ -163,6 +162,9 @@ class naive_segment_tree {
   [[nodiscard]] const T* data() const noexcept { return data_.data(); }
 
   // Time complexity - O(1).
+  [[nodiscard]] iterator begin() noexcept { return data_.begin(); }
+
+  // Time complexity - O(1).
   [[nodiscard]] const_iterator begin() const noexcept { return data_.begin(); }
 
   // Time complexity - O(1).
@@ -171,10 +173,16 @@ class naive_segment_tree {
   }
 
   // Time complexity - O(1).
+  [[nodiscard]] iterator end() noexcept { return data_.end(); }
+
+  // Time complexity - O(1).
   [[nodiscard]] const_iterator end() const noexcept { return data_.end(); }
 
   // Time complexity - O(1).
   [[nodiscard]] const_iterator cend() const noexcept { return data_.cend(); }
+
+  // Time complexity - O(1).
+  [[nodiscard]] reverse_iterator rbegin() noexcept { return data_.rbegin(); }
 
   // Time complexity - O(1).
   [[nodiscard]] const_reverse_iterator rbegin() const noexcept {
@@ -185,6 +193,9 @@ class naive_segment_tree {
   [[nodiscard]] const_reverse_iterator crbegin() const noexcept {
     return data_.crbegin();
   }
+
+  // Time complexity - O(1).
+  [[nodiscard]] reverse_iterator rend() noexcept { return data_.rend(); }
 
   // Time complexity - O(1).
   [[nodiscard]] const_reverse_iterator rend() const noexcept {
@@ -324,31 +335,7 @@ class naive_segment_tree {
     return std::move(*result);
   }
 
-  // Time complexity - O(min(n, k log n)) where k is size of Range.
-  template <typename Range>
-  const_iterator copy(const Range& range, const_iterator dist_first) {
-    const_iterator dist_last =
-        std::copy(range.begin(), range.end(), remove_const(dist_first));
-    return dist_last;
-  }
-
-  // Time complexity - O(min(n, k log n)) where k is size of Range.
-  template <typename Range>
-  const_iterator move(Range&& range, const_iterator dist_first) {
-    const_iterator dist_last =
-        std::move(range.begin(), range.end(), remove_const(dist_first));
-    return dist_last;
-  }
-
-  // Time complexity - O(min(n, k log n)) where k is distance(first, last).
-  void fill(const_iterator first, const_iterator last, const T& value) {
-    std::fill(remove_const(first), remove_const(last), value);
-  }
-
-  template <class Generator>
-  void generate(const_iterator first, const_iterator last, Generator g) {
-    std::generate(remove_const(first), remove_const(last), g);
-  }
+  void update_range(const_iterator, const_iterator) {}
 
  private:
   Reducer reducer_;
