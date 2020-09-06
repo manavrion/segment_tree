@@ -22,7 +22,6 @@ graph TD
 
 ## Used format
 
-Tree:
 ```mermaid
 graph TD
     0 --> 1
@@ -31,19 +30,14 @@ graph TD
     1 --> 4
     2 --> 5
     2 --> 6
-```
-
-And plain data:
-```mermaid
-graph TD
-    0:::plain
-    1:::plain
-    2:::plain
-    3:::plain
-    4:::plain
-    5:::plain
-    6:::plain
-    7:::plain
+    3 --> v0[0]:::plain
+    3 --> v1[1]:::plain
+    4 --> v2[2]:::plain
+    4 --> v3[3]:::plain
+    5 --> v4[4]:::plain
+    5 --> v5[5]:::plain
+    6 --> v6[6]:::plain
+    6 --> v7[7]:::plain
     classDef plain fill:#fff;
 ```
 
