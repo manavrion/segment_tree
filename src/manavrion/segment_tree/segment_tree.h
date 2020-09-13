@@ -70,6 +70,17 @@ class segment_tree {
   bool is_left_child(size_t node_index) const { return node_index % 2 != 0; }
   bool is_right_child(size_t node_index) const { return node_index % 2 == 0; }
 
+  size_t shift_up(size_t shift) const { return shift / 2; }
+
+  size_t left_data_child(size_t node_index) const {
+    assert(node_index == std::clamp(node_index, shift_up(shift_), shift_ - 1));
+    return left_child(node_index) - shift_;
+  }
+  size_t right_data_child(size_t node_index) const {
+    assert(node_index == std::clamp(node_index, shift_up(shift_), shift_ - 1));
+    return right_child(node_index) - shift_;
+  }
+
   void init_tree() {
     assert(tree_.empty());
     const size_t n = data_.size();
@@ -90,10 +101,11 @@ class segment_tree {
     const size_t tree_size = tree_.size();
     const size_t data_size = data_.size();
 
-    for (size_t i = parent(shift_); i < tree_size; ++i) {
-      const size_t child_1 = left_child(i) - shift_;
-      const size_t child_2 = right_child(i) - shift_;
-      if (child_1 < data_size && child_2 < data_size) {
+    for (size_t i = shift_up(shift_); i < tree_size; ++i) {
+      const size_t child_1 = left_data_child(i);
+      const size_t child_2 = child_1 + 1;
+      assert(child_2 == right_data_child(i));
+      if (child_2 < data_size) {
         tree_[i] = reducer_(mapper_(data_[child_1]), mapper_(data_[child_2]));
       } else if (child_1 < data_size) {
         tree_[i] = mapper_(data_[child_1]);
@@ -104,15 +116,16 @@ class segment_tree {
 
     size_t prev_node = 0;
     size_t last_node = tree_size ? tree_size - 1 : 0;
-    size_t shift = parent(shift_);
+    size_t shift = shift_up(shift_);
 
     while (last_node != 0) {
       prev_node = last_node;
       last_node = parent(last_node);
-      shift = parent(shift);
+      shift = shift_up(shift);
       for (size_t i = shift; i <= last_node; ++i) {
         const size_t child_1 = left_child(i);
-        const size_t child_2 = right_child(i);
+        const size_t child_2 = child_1 + 1;
+        assert(child_2 == right_child(i));
         if (child_1 <= prev_node && child_2 <= prev_node) {
           tree_[i] = reducer_(tree_[child_1], tree_[child_2]);
         } else if (child_1 <= prev_node) {
@@ -137,9 +150,10 @@ class segment_tree {
     ssize_t i = parent(shift_ + index);
     assert(i < tree_size);
 
-    const size_t child_1 = left_child(i) - shift_;
-    const size_t child_2 = right_child(i) - shift_;
-    if (child_1 < data_size && child_2 < data_size) {
+    const size_t child_1 = left_data_child(i);
+    const size_t child_2 = child_1 + 1;
+    assert(child_2 == right_data_child(i));
+    if (child_2 < data_size) {
       tree_[i] = reducer_(mapper_(data_[child_1]), mapper_(data_[child_2]));
     } else if (child_1 < data_size) {
       tree_[i] = mapper_(data_[child_1]);
@@ -150,7 +164,8 @@ class segment_tree {
     while (i != 0) {
       i = parent(i);
       const size_t child_1 = left_child(i);
-      const size_t child_2 = right_child(i);
+      const size_t child_2 = child_1 + 1;
+      assert(child_2 == right_child(i));
       if (child_2 < tree_size) {
         tree_[i] = reducer_(tree_[child_1], tree_[child_2]);
       } else {
@@ -204,7 +219,7 @@ class segment_tree {
 
     first_index /= 2;
     last_index /= 2;
-    size_t shift = parent(shift_);
+    size_t shift = shift_up(shift_);
 
     while (first_index < last_index) {
       if (first_index < last_index && is_right_child(shift + first_index)) {
