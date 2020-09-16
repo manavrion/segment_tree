@@ -29,6 +29,6 @@ template <typename T, typename Reducer>
 struct deduce_mapper<T, Reducer,
                      std::enable_if_t<std::is_constructible_v<
                          T, std::invoke_result_t<Reducer, T, T>>>>
-    : std::true_type, public default_mapper {};
+    : public default_mapper {};
 
 }  // namespace manavrion::segment_tree::functors
