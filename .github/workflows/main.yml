@@ -6,9 +6,18 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
+        cxx: [clang++-6.0, clang++-8, clang++-9, g++-7, g++-8, g++-9]
+        include:
+          - os: macos-latest
+            cxx: clang++
+          - os: windows-latest
+            cxx: msvc
 
     runs-on: ${{ matrix.os }}
+
+    env:
+      CXX: ${{ matrix.cxx }}
 
     steps:
       - uses: actions/checkout@v2
