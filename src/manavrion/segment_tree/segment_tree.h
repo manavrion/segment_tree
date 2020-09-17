@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cmath>
 #include <iterator>
+#include <optional>
 #include <type_traits>
 
 #include "manavrion/segment_tree/details.h"
@@ -62,7 +63,16 @@ class segment_tree {
   using reducer_type = Reducer;
 
  private:
-  size_t parent(size_t node_index) const { return (node_index - 1) / 2; }
+  struct scoped_rebuild {
+    scoped_rebuild(segment_tree* that) : that(that) {}
+    ~scoped_rebuild() { that->rebuild_tree(); }
+    segment_tree* that;
+  };
+
+  size_t parent(size_t node_index) const {
+    assert(node_index != 0);
+    return (node_index - 1) / 2;
+  }
 
   size_t left_child(size_t node_index) const { return node_index * 2 + 1; }
   size_t right_child(size_t node_index) const { return node_index * 2 + 2; }
@@ -147,7 +157,7 @@ class segment_tree {
 
     assert(index < data_size);
 
-    ssize_t i = parent(shift_ + index);
+    size_t i = parent(shift_ + index);
     assert(i < tree_size);
 
     const size_t child_1 = left_data_child(i);
@@ -451,52 +461,52 @@ class segment_tree {
 
   // Time complexity - O(n).
   const_iterator insert(const_iterator pos, const T& value) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.insert(pos, value);
   }
 
   // Time complexity - O(n).
   const_iterator insert(const_iterator pos, T&& value) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.insert(pos, std::move(value));
   }
 
   // Time complexity - O(n).
   const_iterator insert(const_iterator pos, size_type count, const T& value) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.insert(pos, count, value);
   }
 
   // Time complexity - O(n).
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
   const_iterator insert(const_iterator pos, InputIt first, InputIt last) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.insert(pos, first, last);
   }
 
   // Time complexity - O(n).
   const_iterator insert(const_iterator pos,
                         std::initializer_list<T> init_list) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.insert(pos, init_list);
   }
 
   // Time complexity - O(n).
   template <typename... Args>
   const_iterator emplace(const_iterator pos, Args&&... args) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.emplace(pos, std::forward<Args>(args)...);
   }
 
   // Time complexity - O(n).
   const_iterator erase(const_iterator pos) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.erase(pos);
   }
 
   // Time complexity - O(n).
   const_iterator erase(const_iterator first, const_iterator last) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.erase(first, last);
   }
 

@@ -1,5 +1,3 @@
 cd "$(dirname "$0")"
-mkdir .build
-cd .build
-cmake ..
-cmake --build . --parallel 8
+cmake -S . -B .build
+cmake --build .build --parallel 8

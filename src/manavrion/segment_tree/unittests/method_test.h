@@ -8,7 +8,7 @@
 #include <array>
 #include <iterator>
 
-constexpr auto numbers = {0, 1, 2};
+constexpr std::initializer_list<int> numbers = {0, 1, 2};
 
 using manavrion::segment_tree::functors::default_mapper;
 using manavrion::segment_tree::functors::default_reducer;

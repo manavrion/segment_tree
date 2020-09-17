@@ -50,6 +50,12 @@ class test_segment_tree {
   using reducer_type = Reducer;
 
  private:
+  struct scoped_rebuild {
+    scoped_rebuild(test_segment_tree* that) : that(that) {}
+    ~scoped_rebuild() { that->rebuild_tree(); }
+    test_segment_tree* that;
+  };
+
   using iterator = typename container_type::iterator;
   using reverse_iterator = typename container_type::reverse_iterator;
 
@@ -393,52 +399,52 @@ class test_segment_tree {
 
   // Time complexity - O(n).
   const_iterator insert(const_iterator pos, const T& value) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.insert(pos, value);
   }
 
   // Time complexity - O(n).
   const_iterator insert(const_iterator pos, T&& value) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.insert(pos, std::move(value));
   }
 
   // Time complexity - O(n).
   const_iterator insert(const_iterator pos, size_type count, const T& value) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.insert(pos, count, value);
   }
 
   // Time complexity - O(n).
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
   const_iterator insert(const_iterator pos, InputIt first, InputIt last) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.insert(pos, first, last);
   }
 
   // Time complexity - O(n).
   const_iterator insert(const_iterator pos,
                         std::initializer_list<T> init_list) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.insert(pos, init_list);
   }
 
   // Time complexity - O(n).
   template <typename... Args>
   const_iterator emplace(const_iterator pos, Args&&... args) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.emplace(pos, std::forward<Args>(args)...);
   }
 
   // Time complexity - O(n).
   const_iterator erase(const_iterator pos) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.erase(pos);
   }
 
   // Time complexity - O(n).
   const_iterator erase(const_iterator first, const_iterator last) {
-    details::scoped{[this] { rebuild_tree(); }};
+    scoped_rebuild scoped{this};
     return data_.erase(first, last);
   }
 
@@ -507,7 +513,7 @@ class test_segment_tree {
     if (head_) {
       q.emplace_back(head_.get());
     }
-    
+
     while (!q.empty()) {
       assert(q.size() <= max_size);
 

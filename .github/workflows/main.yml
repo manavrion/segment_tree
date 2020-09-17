@@ -1,24 +1,23 @@
-name: CI
+name: main
 
 on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
-      - run: pip install mkdocs-material
-      - run: mkdocs gh-deploy --config-file mkdocs/mkdocs.yml --force
 
-      - name: Install compiler
-        run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+      - name: Configure
+        run: cmake -S . -B .build
 
       - name: Build
-        run: bash build.sh
+        run: cmake --build .build --parallel 8
 
       - name: Test
-        run: bash test.sh
+        run: (cd .build && ctest --output-on-failure)
