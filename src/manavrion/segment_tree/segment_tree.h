@@ -21,7 +21,7 @@ template <typename T, typename Reducer = functors::default_reducer,
           typename Allocator = std::allocator<T>,
           typename TreeAllocator =
               std::allocator<std::decay_t<std::invoke_result_t<Mapper, T>>>>
-class segment_tree {
+class segment_tree : private Reducer, private Mapper {
   static_assert(std::is_invocable_v<Mapper, T>);
   using mapper_result = std::decay_t<std::invoke_result_t<Mapper, T>>;
   static_assert(std::is_invocable_v<Reducer, mapper_result, mapper_result>);
@@ -64,6 +64,14 @@ class segment_tree {
   using reducer_type = Reducer;
 
  private:
+  const Reducer& reducer() const& { return *static_cast<const Reducer*>(this); }
+
+  Reducer&& reducer() && { return std::move(*static_cast<Reducer*>(this)); }
+
+  const Mapper& mapper() const& { return *static_cast<const Mapper*>(this); }
+
+  Mapper&& mapper() && { return std::move(*static_cast<Mapper*>(this)); }
+
   struct scoped_rebuild {
     scoped_rebuild(segment_tree* that) : that(that) {}
     ~scoped_rebuild() { that->rebuild_tree(); }
@@ -111,15 +119,17 @@ class segment_tree {
     init_tree();
     const size_t tree_size = tree_.size();
     const size_t data_size = data_.size();
+    const auto& reduce = reducer();
+    const auto& map = mapper();
 
     for (size_t i = shift_up(shift_); i < tree_size; ++i) {
       const size_t child_1 = left_data_child(i);
       const size_t child_2 = child_1 + 1;
       assert(child_2 == right_data_child(i));
       if (child_2 < data_size) {
-        tree_[i] = reducer_(mapper_(data_[child_1]), mapper_(data_[child_2]));
+        tree_[i] = reduce(map(data_[child_1]), map(data_[child_2]));
       } else if (child_1 < data_size) {
-        tree_[i] = mapper_(data_[child_1]);
+        tree_[i] = map(data_[child_1]);
       } else {
         assert(false);
       }
@@ -138,7 +148,7 @@ class segment_tree {
         const size_t child_2 = child_1 + 1;
         assert(child_2 == right_child(i));
         if (child_1 <= prev_node && child_2 <= prev_node) {
-          tree_[i] = reducer_(tree_[child_1], tree_[child_2]);
+          tree_[i] = reduce(tree_[child_1], tree_[child_2]);
         } else if (child_1 <= prev_node) {
           tree_[i] = tree_[child_1];
         }
@@ -155,6 +165,8 @@ class segment_tree {
     }
     const size_t data_size = data_.size();
     const size_t tree_size = tree_.size();
+    const auto& reduce = reducer();
+    const auto& map = mapper();
 
     assert(index < data_size);
 
@@ -165,9 +177,9 @@ class segment_tree {
     const size_t child_2 = child_1 + 1;
     assert(child_2 == right_data_child(i));
     if (child_2 < data_size) {
-      tree_[i] = reducer_(mapper_(data_[child_1]), mapper_(data_[child_2]));
+      tree_[i] = reduce(map(data_[child_1]), map(data_[child_2]));
     } else if (child_1 < data_size) {
-      tree_[i] = mapper_(data_[child_1]);
+      tree_[i] = map(data_[child_1]);
     } else {
       assert(true);
     }
@@ -178,7 +190,7 @@ class segment_tree {
       const size_t child_2 = child_1 + 1;
       assert(child_2 == right_child(i));
       if (child_2 < tree_size) {
-        tree_[i] = reducer_(tree_[child_1], tree_[child_2]);
+        tree_[i] = reduce(tree_[child_1], tree_[child_2]);
       } else {
         assert(child_1 < tree_size);
         tree_[i] = tree_[child_1];
@@ -207,10 +219,13 @@ class segment_tree {
     assert(first_index <= last_index);
     assert(last_index <= data_.size());
 
+    const auto& reduce = reducer();
+    const auto& map = mapper();
+
     std::optional<tree_value_type> result;
     auto add_result = [&](const auto& value) {
       if (result) {
-        result.emplace(reducer_(std::move(*result), value));
+        result.emplace(reduce(std::move(*result), value));
       } else {
         result.emplace(value);
       }
@@ -218,13 +233,13 @@ class segment_tree {
 
     if (first_index < last_index && first_index % 2 != 0) {
       assert(first_index < data_.size());
-      add_result(mapper_(data_[first_index]));
+      add_result(map(data_[first_index]));
       ++first_index;
     }
 
     if (first_index < last_index && last_index % 2 != 0) {
       assert(last_index - 1 < data_.size());
-      add_result(mapper_(data_[last_index - 1]));
+      add_result(map(data_[last_index - 1]));
       --last_index;
     }
 
@@ -269,8 +284,8 @@ class segment_tree {
   explicit segment_tree(Reducer reducer, Mapper mapper = {},
                         const Allocator& allocator = {},
                         const TreeAllocator& tree_allocator = {})
-      : reducer_(std::move(reducer)),
-        mapper_(std::move(mapper)),
+      : Reducer(std::move(reducer)),
+        Mapper(std::move(mapper)),
         data_(allocator),
         tree_(tree_allocator) {}
 
@@ -278,8 +293,8 @@ class segment_tree {
   segment_tree(InputIt first, InputIt last, Reducer reducer = {},
                Mapper mapper = {}, const Allocator& allocator = {},
                const TreeAllocator& tree_allocator = {})
-      : reducer_(std::move(reducer)),
-        mapper_(std::move(mapper)),
+      : Reducer(std::move(reducer)),
+        Mapper(std::move(mapper)),
         data_(first, last, allocator),
         tree_(tree_allocator) {
     build_tree();
@@ -296,8 +311,8 @@ class segment_tree {
   // Time complexity - O(n).
   segment_tree(const segment_tree& other, const Allocator& allocator = {},
                const TreeAllocator& tree_allocator = {})
-      : reducer_(other.reducer_),
-        mapper_(other.mapper_),
+      : Reducer(other.reducer()),
+        Mapper(other.mapper()),
         data_(other.data_, allocator),
         tree_(tree_allocator) {
     build_tree();
@@ -305,8 +320,8 @@ class segment_tree {
 
   segment_tree(segment_tree&& other, const Allocator& allocator = {},
                const TreeAllocator& tree_allocator = {}) noexcept
-      : reducer_(std::move(other.reducer_)),
-        mapper_(std::move(other.mapper_)),
+      : Reducer(std::move(other).reducer()),
+        Mapper(std::move(other).mapper()),
         data_(std::move(other.data_), allocator),
         tree_(std::move(other.tree_), tree_allocator),
         shift_(other.shift_) {}
@@ -315,8 +330,8 @@ class segment_tree {
   segment_tree(std::initializer_list<T> init_list, Reducer reducer = {},
                Mapper mapper = {}, const Allocator& allocator = {},
                const TreeAllocator& tree_allocator = {})
-      : reducer_(std::move(reducer)),
-        mapper_(std::move(mapper)),
+      : Reducer(std::move(reducer)),
+        Mapper(std::move(mapper)),
         data_(init_list, allocator),
         tree_(tree_allocator) {
     build_tree();
@@ -336,14 +351,7 @@ class segment_tree {
     return *this;
   }
 
-  segment_tree& operator=(segment_tree&& other) noexcept {
-    reducer_ = std::move(other.reducer_);
-    mapper_ = std::move(other.mapper_);
-    data_ = std::move(other.data_);
-    tree_ = std::move(other.tree_);
-    shift_ = other.shift_;
-    return *this;
-  }
+  segment_tree& operator=(segment_tree&& other) = default;
 
   // Time complexity - O(n).
   segment_tree& operator=(std::initializer_list<T> init_list) {
@@ -569,8 +577,6 @@ class segment_tree {
                          const segment_tree<T2, R, M, A>& rhs);
 
  private:
-  Reducer reducer_;
-  Mapper mapper_;
   std::vector<value_type, allocator_type> data_;
 
   std::vector<tree_value_type, tree_allocator_type> tree_;

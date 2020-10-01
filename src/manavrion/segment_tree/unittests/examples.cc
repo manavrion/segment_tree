@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+#include <functional>
 #include <utility>
 
 #include "manavrion/segment_tree/segment_tree.h"
@@ -27,10 +28,8 @@ TEST(SegmentTree, Example_1) {
 }
 
 TEST(SegmentTree, Example_2) {
-  auto plus = [](auto lhs, auto rhs) { return lhs + rhs; };
-
   // You can use custom functors.
-  segment_tree<int, decltype(plus)> st({0, 1, 2, 3, 4}, plus);
+  segment_tree<int, std::plus<int>> st({0, 1, 2, 3, 4}, std::plus<int>{});
   EXPECT_EQ(st.query(2, 5), 9);
 }
 

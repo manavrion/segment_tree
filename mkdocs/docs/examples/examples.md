@@ -18,10 +18,8 @@ EXPECT_EQ(st.query(2, 5), 3);
 # Custom functor
 
 ```C++
-auto plus = [](auto lhs, auto rhs) { return lhs + rhs; };
-
 // You can use custom functors.
-segment_tree<int, decltype(plus)> st({0, 1, 2, 3, 4}, plus);
+segment_tree<int, std::plus<int>> st({0, 1, 2, 3, 4}, std::plus<int>{});
 EXPECT_EQ(st.query(2, 5), 9);
 ```
 
