@@ -19,7 +19,7 @@ EXPECT_EQ(st.query(2, 5), 3);
 
 ```C++
 // You can use custom functors.
-segment_tree<int, std::plus<int>> st({0, 1, 2, 3, 4}, std::plus<int>{});
+segment_tree<int, std::plus<int>> st({0, 1, 2, 3, 4});
 EXPECT_EQ(st.query(2, 5), 9);
 ```
 
