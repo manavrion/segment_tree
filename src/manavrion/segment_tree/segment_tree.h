@@ -147,7 +147,7 @@ class segment_tree : private Reducer, private Mapper {
         const size_t child_1 = left_child(i);
         const size_t child_2 = child_1 + 1;
         assert(child_2 == right_child(i));
-        if (child_1 <= prev_node && child_2 <= prev_node) {
+        if (child_2 <= prev_node) {
           tree_[i] = reduce(tree_[child_1], tree_[child_2]);
         } else if (child_1 <= prev_node) {
           tree_[i] = tree_[child_1];
