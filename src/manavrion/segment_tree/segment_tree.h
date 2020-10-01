@@ -9,6 +9,7 @@
 #include <iterator>
 #include <optional>
 #include <type_traits>
+#include <vector>
 
 #include "manavrion/segment_tree/details.h"
 #include "manavrion/segment_tree/functors.h"
