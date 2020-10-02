@@ -135,21 +135,20 @@ class segment_tree : private Reducer, private Mapper {
       }
     }
 
-    size_t prev_node = 0;
-    size_t last_node = tree_size ? tree_size - 1 : 0;
+    size_t last = tree_size ? tree_size - 1 : 0;
     size_t shift = shift_up(shift_);
 
-    while (last_node != 0) {
-      prev_node = last_node;
-      last_node = parent(last_node);
+    while (last != 0) {
+      const size_t prev_last = last;
+      last = parent(last);
       shift = shift_up(shift);
-      for (size_t i = shift; i <= last_node; ++i) {
+      for (size_t i = shift; i <= last; ++i) {
         const size_t child_1 = left_child(i);
         const size_t child_2 = child_1 + 1;
         assert(child_2 == right_child(i));
-        if (child_2 <= prev_node) {
+        if (child_2 <= prev_last) {
           tree_[i] = reduce(tree_[child_1], tree_[child_2]);
-        } else if (child_1 <= prev_node) {
+        } else if (child_1 <= prev_last) {
           tree_[i] = tree_[child_1];
         }
       }
