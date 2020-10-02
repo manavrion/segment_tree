@@ -7,23 +7,31 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        cxx: [clang++-6.0, clang++-8, clang++-9, g++-7, g++-8, g++-9]
+        tool: [
+          linux_clang6,
+          linux_clang8,
+          linux_clang9,
+          linux_clang9_asan,
+          linux_clang9_lsan,
+        # linux_clang9_msan,
+          linux_clang9_tsan,
+          linux_clang9_ubsan,
+          linux_gcc7,
+          linux_gcc8,
+          linux_gcc9]
         include:
           - os: macos-latest
-            cxx: clang++
+            tool: macos_clang
           - os: windows-latest
-            cxx: msvc
+            tool: windows_msvc
 
     runs-on: ${{ matrix.os }}
-
-    env:
-      CXX: ${{ matrix.cxx }}
 
     steps:
       - uses: actions/checkout@v2
 
       - name: Configure
-        run: cmake -S . -B .build
+        run: cmake -S . -B .build -DCMAKE_TOOLCHAIN_FILE="toolchain/${{ matrix.tool }}.cmake"
 
       - name: Build
         run: cmake --build .build --parallel 8
