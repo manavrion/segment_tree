@@ -100,6 +100,11 @@ class segment_tree : private Reducer, private Mapper {
     return right_child(node_index) - shift_;
   }
 
+  size_t parent_of_data(size_t data_index) const {
+    assert(data_index < data_.size());
+    return (data_index + shift_ - 1) / 2;
+  }
+
   void init_tree() {
     assert(tree_.empty());
     const size_t n = data_.size();
@@ -157,7 +162,7 @@ class segment_tree : private Reducer, private Mapper {
 
   // Updates unique element.
   // Time complexity - O(log n).
-  void update(size_t index) {
+  void update(size_t i) {
     if (data_.size() == 1) {
       assert(tree_.empty());
       return;
@@ -167,9 +172,8 @@ class segment_tree : private Reducer, private Mapper {
     const auto& reduce = reducer();
     const auto& map = mapper();
 
-    assert(index < data_size);
-
-    size_t i = parent(shift_ + index);
+    assert(i < data_size);
+    i = parent_of_data(i);
     assert(i < tree_size);
 
     const size_t child_1 = left_data_child(i);
