@@ -18,17 +18,9 @@
 
 namespace manavrion::segment_tree {
 
-template <typename T, typename Reducer = functors::default_reducer,
-          typename Mapper = functors::deduce_mapper<T, Reducer>,
+template <typename T, typename Reducer = std::plus<T>,
           typename Allocator = std::allocator<T>>
 class naive_segment_tree {
-  static_assert(std::is_invocable_v<Mapper, T>);
-  using mapper_result = std::decay_t<std::invoke_result_t<Mapper, T>>;
-  static_assert(std::is_invocable_v<Reducer, mapper_result, mapper_result>);
-  static_assert(std::is_convertible_v<
-                std::invoke_result_t<Reducer, mapper_result, mapper_result>,
-                mapper_result>);
-
   using container_type = std::vector<T, Allocator>;
 
  public:
@@ -48,8 +40,6 @@ class naive_segment_tree {
       typename container_type::const_reverse_iterator;
 
   // naive_segment_tree specific.
-  using reduced_type = mapper_result;
-  using mapper_type = Mapper;
   using reducer_type = Reducer;
 
  private:
@@ -63,18 +53,13 @@ class naive_segment_tree {
 
   explicit naive_segment_tree(const Allocator& allocator) : data_(allocator) {}
 
-  explicit naive_segment_tree(Reducer reducer, Mapper mapper = {},
-                              const Allocator& allocator = {})
-      : reducer_(std::move(reducer)),
-        mapper_(std::move(mapper)),
-        data_(allocator) {}
+  explicit naive_segment_tree(Reducer reducer, const Allocator& allocator = {})
+      : reducer_(std::move(reducer)), data_(allocator) {}
 
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
   naive_segment_tree(InputIt first, InputIt last, Reducer reducer = {},
-                     Mapper mapper = {}, const Allocator& allocator = {})
-      : reducer_(std::move(reducer)),
-        mapper_(std::move(mapper)),
-        data_(first, last, allocator) {}
+                     const Allocator& allocator = {})
+      : reducer_(std::move(reducer)), data_(first, last, allocator) {}
 
   // Time complexity - O(n).
   template <typename InputIt, typename = details::require_input_iter<InputIt>>
@@ -84,22 +69,17 @@ class naive_segment_tree {
   // Time complexity - O(n).
   naive_segment_tree(const naive_segment_tree& other,
                      const Allocator& allocator = {})
-      : reducer_(other.reducer_),
-        mapper_(other.mapper_),
-        data_(other.data_, allocator) {}
+      : reducer_(other.reducer_), data_(other.data_, allocator) {}
 
   naive_segment_tree(naive_segment_tree&& other,
                      const Allocator& allocator = {}) noexcept
       : reducer_(std::move(other.reducer_)),
-        mapper_(std::move(other.mapper_)),
         data_(std::move(other.data_), allocator) {}
 
   // Time complexity - O(n).
   naive_segment_tree(std::initializer_list<T> init_list, Reducer reducer = {},
-                     Mapper mapper = {}, const Allocator& alloc = {})
-      : reducer_(std::move(reducer)),
-        mapper_(std::move(mapper)),
-        data_(init_list, alloc) {}
+                     const Allocator& alloc = {})
+      : reducer_(std::move(reducer)), data_(init_list, alloc) {}
 
   // Time complexity - O(n).
   naive_segment_tree(std::initializer_list<T> init_list, const Allocator& alloc)
@@ -113,7 +93,6 @@ class naive_segment_tree {
 
   naive_segment_tree& operator=(naive_segment_tree&& other) noexcept {
     reducer_ = std::move(other.reducer_);
-    mapper_ = std::move(other.mapper_);
     data_ = std::move(other.data_);
     return *this;
   }
@@ -213,6 +192,10 @@ class naive_segment_tree {
   // Time complexity - O(1).
   [[nodiscard]] size_type size() const noexcept { return data_.size(); }
 
+  void reserve(size_t capacity) { data_.reserve(capacity); }
+
+  [[nodiscard]] size_type capacity() const noexcept { return data_.capacity(); }
+
   // Time complexity - O(1).
   [[nodiscard]] size_type max_size() const noexcept { return data_.max_size(); }
 
@@ -279,44 +262,43 @@ class naive_segment_tree {
     data_[index] = std::forward<V>(v);
   }
 
-  template <typename R, typename M, typename A>
-  bool operator==(const naive_segment_tree<T, R, M, A>& other) const {
+  template <typename R, typename A>
+  bool operator==(const naive_segment_tree<T, R, A>& other) const {
     return data_ == other.data_;
   }
 
-  template <typename R, typename M, typename A>
-  bool operator!=(const naive_segment_tree<T, R, M, A>& other) const {
+  template <typename R, typename A>
+  bool operator!=(const naive_segment_tree<T, R, A>& other) const {
     return data_ != other.data_;
   }
 
-  template <typename R, typename M, typename A>
-  bool operator<(const naive_segment_tree<T, R, M, A>& other) const {
+  template <typename R, typename A>
+  bool operator<(const naive_segment_tree<T, R, A>& other) const {
     return data_ < other.data_;
   }
 
-  template <typename R, typename M, typename A>
-  bool operator<=(const naive_segment_tree<T, R, M, A>& other) const {
+  template <typename R, typename A>
+  bool operator<=(const naive_segment_tree<T, R, A>& other) const {
     return data_ <= other.data_;
   }
 
-  template <typename R, typename M, typename A>
-  bool operator>(const naive_segment_tree<T, R, M, A>& other) const {
+  template <typename R, typename A>
+  bool operator>(const naive_segment_tree<T, R, A>& other) const {
     return data_ > other.data_;
   }
 
-  template <typename R, typename M, typename A>
-  bool operator>=(const naive_segment_tree<T, R, M, A>& other) const {
+  template <typename R, typename A>
+  bool operator>=(const naive_segment_tree<T, R, A>& other) const {
     return data_ >= other.data_;
   }
 
   // Make a query on [first_index, last_index) segment.
   // Time complexity - O(n).
-  [[nodiscard]] reduced_type query(size_t first_index,
-                                   size_t last_index) const {
+  [[nodiscard]] T query(size_t first_index, size_t last_index) const {
     assert(first_index <= last_index);
     assert(last_index <= data_.size());
 
-    std::optional<reduced_type> result;
+    std::optional<T> result;
     auto add_result = [&](const auto& value) {
       if (result) {
         result.emplace(reducer_(std::move(*result), value));
@@ -326,7 +308,7 @@ class naive_segment_tree {
     };
 
     for (size_t i = first_index; i < last_index; ++i) {
-      add_result(mapper_(data_[i]));
+      add_result(data_[i]);
     }
 
     if (!result) {
@@ -339,7 +321,6 @@ class naive_segment_tree {
 
  private:
   Reducer reducer_;
-  Mapper mapper_;
   std::vector<value_type, Allocator> data_;
 };
 

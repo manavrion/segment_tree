@@ -22,10 +22,7 @@ void RandomTestImpl(const std::vector<int> as) {
            ++last_index) {
         auto test_res = test.query(first_index, last_index);
         auto canonical_res = canonical.query(first_index, last_index);
-        EXPECT_EQ(test_res.min, canonical_res.min);
-        EXPECT_EQ(test_res.max, canonical_res.max);
-        EXPECT_EQ(test_res.sum, canonical_res.sum);
-        EXPECT_EQ(test_res.mul, canonical_res.mul);
+        EXPECT_EQ(test_res, canonical_res);
       }
     }
   };

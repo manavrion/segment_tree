@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "manavrion/segment_tree/mapped_segment_tree.h"
 #include "manavrion/segment_tree/naive_segment_tree.h"
 #include "manavrion/segment_tree/segment_tree.h"
 #include "manavrion/segment_tree/unittests/complicated_functor_test.h"
@@ -24,10 +25,13 @@ using TestSegmentTree =
 
 template <typename T, typename Reducer, typename Mapper>
 using NaiveSegmentTree =
-    naive_segment_tree<T, Reducer, Mapper, std::allocator<T>>;
+    naive_segment_tree<T, Reducer, std::allocator<T>>;
 
 template <typename T, typename Reducer, typename Mapper>
-using SegmentTree = segment_tree<T, Reducer, Mapper, std::allocator<T>>;
+using MappedSegmentTree = mapped_segment_tree<T, Reducer, Mapper, std::allocator<T>>;
+
+template <typename T, typename Reducer, typename Mapper>
+using SegmentTree = segment_tree<T, Reducer, std::allocator<T>>;
 
 template <template <typename, typename, typename> typename S>
 void TestSimpleSegmentTree() {
@@ -49,16 +53,25 @@ void TestSimpleSegmentTree() {
   Specialized<SegmentTree>();
 }
 
-TEST(TestSegmentTree, Test) { TestSimpleSegmentTree<TestSegmentTree>(); }
+// TEST(TestSegmentTree, Test) { TestSimpleSegmentTree<TestSegmentTree>(); }
 
-TEST(NaiveSegmentTree, Test) { TestSimpleSegmentTree<NaiveSegmentTree>(); }
+// TEST(NaiveSegmentTree, Test) { TestSimpleSegmentTree<NaiveSegmentTree>(); }
 
-TEST(SegmentTree, Test) { TestSimpleSegmentTree<SegmentTree>(); }
+// TEST(MappedSegmentTree, Test) { TestSimpleSegmentTree<MappedSegmentTree>(); }
 
-TEST(SegmentTree_Vs_Naive, RandomTest) {
-  RandomTest<SegmentTree<int, test_reducer<int>, test_mapper<int>>,
-             NaiveSegmentTree<int, test_reducer<int>, test_mapper<int>>>();
+// TEST(SegmentTree, Test) { TestSimpleSegmentTree<SegmentTree>(); }
+
+TEST(MappedSegmentTree_Vs_Naive, RandomTest) {
+  RandomTest<mapped_segment_tree<int>,
+             naive_segment_tree<int>>();
 }
+
+#if 0
+TEST(MappedSegmentTree_Vs_SegmentTree, RandomTest) {
+  RandomTest<MappedSegmentTree<int, test_reducer<int>, test_mapper<int>>,
+             SegmentTree<int, test_reducer<int>, test_mapper<int>>>();
+}
+#endif
 
 #if 0
 TEST(TestSegmentTree_Vs_Naive, RandomTest) {

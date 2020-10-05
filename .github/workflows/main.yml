@@ -12,6 +12,7 @@ jobs:
           linux_clang8,
           linux_clang9,
           linux_clang9_asan,
+          linux_clang9_benchmark,
           linux_clang9_lsan,
         # linux_clang9_msan,
           linux_clang9_tsan,
@@ -37,4 +38,4 @@ jobs:
         run: cmake --build .build --parallel 8
 
       - name: Test
-        run: (cd .build && ctest --output-on-failure)
+        run: (cd .build && ctest --extra-verbose)
