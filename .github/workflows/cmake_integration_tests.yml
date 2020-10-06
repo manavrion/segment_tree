@@ -1,0 +1,31 @@
+name: cmake_integration_tests
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+    # add_subdirectory
+      - name: Configure add_subdirectory
+        run: cmake -S tests/cmake_integration_tests/add_subdirectory -B .add_subdirectory_build
+
+      - name: Build add_subdirectory
+        run: cmake --build .add_subdirectory_build --parallel 8
+
+    # fetch_content
+      - name: Configure fetch_content
+        run: cmake -S tests/cmake_integration_tests/fetch_content -B .fetch_content_build
+
+      - name: Build fetch_content
+        run: cmake --build .fetch_content_build --parallel 8
