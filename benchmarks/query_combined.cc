@@ -5,20 +5,12 @@
 
 #include <benchmark/benchmark.h>
 
-#include <numeric>
-#include <vector>
-
+#include "benchmark_helpers.h"
 #include "manavrion/segment_tree/mapped_segment_tree.h"
 #include "manavrion/segment_tree/naive_segment_tree.h"
 #include "manavrion/segment_tree/segment_tree.h"
 
 using namespace manavrion::segment_tree;
-
-static auto get_numbers(size_t n) {
-  std::vector<int> res(n);
-  std::iota(res.begin(), res.end(), 0);
-  return res;
-}
 
 static void BM_Query_Combined_Simple(benchmark::State& state) {
   auto numbers = get_numbers(state.range(0));
