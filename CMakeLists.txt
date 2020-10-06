@@ -49,3 +49,35 @@ endif()
 if(SEGMENT_TREE_TESTS)
   add_subdirectory(tests/unittests)
 endif()
+
+install(
+  TARGETS segment_tree
+  EXPORT segment_tree_targets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES
+  DESTINATION include)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  segment_tree-config-version.cmake
+  VERSION 0.1
+  COMPATIBILITY AnyNewerVersion)
+
+install(
+  EXPORT segment_tree_targets
+  FILE segment_tree-targets.cmake
+  NAMESPACE manavrion::
+  DESTINATION lib/cmake/segment_tree)
+
+install(FILES "cmake/segment_tree-config.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/segment_tree-config-version.cmake"
+        DESTINATION lib/cmake/segment_tree)
+
+install(DIRECTORY include/manavrion DESTINATION include)
+
+export(
+  TARGETS segment_tree
+  NAMESPACE manavrion::
+  FILE segment_tree-targets.cmake)

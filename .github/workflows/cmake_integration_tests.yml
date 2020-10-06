@@ -29,3 +29,19 @@ jobs:
 
       - name: Build fetch_content
         run: cmake --build .fetch_content_build --parallel 8
+
+    # find_package
+      - name: Configure segment_tree
+        run: cmake -S . -B .build
+
+      - name: Build segment_tree
+        run: cmake --build .build --parallel 8
+
+      - name: Install segment_tree
+        run: cmake --install .build --prefix .build/install
+
+      - name: Configure find_package
+        run: cmake -S tests/cmake_integration_tests/find_package -B .find_package_build
+
+      - name: Build find_package
+        run: cmake --build .find_package_build --parallel 8
