@@ -46,3 +46,13 @@ struct quad_reducer {
 struct quad_mapper {
   quad operator()(int arg) const { return quad{arg, arg, arg, arg}; }
 };
+
+template <typename T>
+struct minimum {
+  T operator()(const T& lhs, const T& rhs) const { return std::min(lhs, rhs); }
+};
+
+template <typename T>
+struct maximum {
+  T operator()(const T& lhs, const T& rhs) const { return std::max(lhs, rhs); }
+};

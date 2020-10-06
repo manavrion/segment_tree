@@ -1,5 +1,13 @@
-set(BENCHMARK_FILES build_comb.cc build.cc query_comb.cc query.cc
-                    update_comb.cc update.cc)
+set(BENCHMARK_FILES
+    build_comb.cc
+    build_quad.cc
+    build.cc
+    query_comb.cc
+    query_quad.cc
+    query.cc
+    update_comb.cc
+    update_quad.cc
+    update.cc)
 
 source_group("benchmarks" FILES ${BENCHMARK_FILES})
 

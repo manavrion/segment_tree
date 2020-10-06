@@ -12,12 +12,16 @@
 
 using namespace manavrion::segment_tree;
 
-static void BM_Query_Comb_Simple(benchmark::State& state) {
+static void BM_Query_Quad_Simple(benchmark::State& state) {
   auto numbers = get_numbers(state.range(0));
   segment_tree<int, std::plus<int>> st1;
   segment_tree<int, std::multiplies<int>> st2;
+  segment_tree<int, minimum<int>> st3;
+  segment_tree<int, maximum<int>> st4;
   st1.assign(numbers.begin(), numbers.end());
   st2.assign(numbers.begin(), numbers.end());
+  st3.assign(numbers.begin(), numbers.end());
+  st4.assign(numbers.begin(), numbers.end());
   size_t r = 0;
   for (auto _ : state) {
     size_t start = r % numbers.size();
@@ -26,17 +30,19 @@ static void BM_Query_Comb_Simple(benchmark::State& state) {
       start = 0;
     }
     ++r;
-    auto res1 = st1.query(start, start + st1.size() / 2);
-    auto res2 = st2.query(start, start + st1.size() / 2);
-    benchmark::DoNotOptimize(res1 + res2);
+    auto sum = st1.query(start, start + st1.size() / 2);
+    auto mul = st2.query(start, start + st1.size() / 2);
+    auto min = st3.query(start, start + st1.size() / 2);
+    auto max = st4.query(start, start + st1.size() / 2);
+    benchmark::DoNotOptimize(sum + mul + min + max);
   }
 }
 
-BENCHMARK(BM_Query_Comb_Simple)->Range(2, 1 << 24);
+BENCHMARK(BM_Query_Quad_Simple)->Range(2, 1 << 24);
 
-static void BM_Query_Comb_Mapped(benchmark::State& state) {
+static void BM_Query_Quad_Mapped(benchmark::State& state) {
   auto numbers = get_numbers(state.range(0));
-  mapped_segment_tree<int, comb_reducer, comb_mapper> st;
+  mapped_segment_tree<int, quad_reducer, quad_mapper> st;
   st.assign(numbers.begin(), numbers.end());
   size_t r = 0;
   for (auto _ : state) {
@@ -47,18 +53,22 @@ static void BM_Query_Comb_Mapped(benchmark::State& state) {
     }
     ++r;
     auto res = st.query(start, start + st.size() / 2);
-    benchmark::DoNotOptimize(res.sum + res.mul);
+    benchmark::DoNotOptimize(res.sum + res.mul + res.min + res.max);
   }
 }
 
-BENCHMARK(BM_Query_Comb_Mapped)->Range(2, 1 << 24);
+BENCHMARK(BM_Query_Quad_Mapped)->Range(2, 1 << 24);
 
-static void BM_Query_Comb_Naive(benchmark::State& state) {
+static void BM_Query_Quad_Naive(benchmark::State& state) {
   auto numbers = get_numbers(state.range(0));
   naive_segment_tree<int, std::plus<int>> st1;
   naive_segment_tree<int, std::multiplies<int>> st2;
+  naive_segment_tree<int, minimum<int>> st3;
+  naive_segment_tree<int, maximum<int>> st4;
   st1.assign(numbers.begin(), numbers.end());
   st2.assign(numbers.begin(), numbers.end());
+  st3.assign(numbers.begin(), numbers.end());
+  st4.assign(numbers.begin(), numbers.end());
   size_t r = 0;
   for (auto _ : state) {
     size_t start = r % numbers.size();
@@ -67,10 +77,12 @@ static void BM_Query_Comb_Naive(benchmark::State& state) {
       start = 0;
     }
     ++r;
-    auto res1 = st1.query(start, start + st1.size() / 2);
-    auto res2 = st2.query(start, start + st1.size() / 2);
-    benchmark::DoNotOptimize(res1 + res2);
+    auto sum = st1.query(start, start + st1.size() / 2);
+    auto mul = st2.query(start, start + st1.size() / 2);
+    auto min = st3.query(start, start + st1.size() / 2);
+    auto max = st4.query(start, start + st1.size() / 2);
+    benchmark::DoNotOptimize(sum + mul + min + max);
   }
 }
 
-BENCHMARK(BM_Query_Comb_Naive)->Range(2, 1 << 24);
+BENCHMARK(BM_Query_Quad_Naive)->Range(2, 1 << 24);
