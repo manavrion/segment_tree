@@ -28,13 +28,7 @@ BENCHMARK(BM_Build_Combined_Simple)->Range(2, 1 << 24);
 
 static void BM_Build_Combined_Mapped(benchmark::State& state) {
   auto numbers = get_numbers(state.range(0));
-
-  auto reducer = [](auto lhs, auto rhs) {
-    return std::make_pair(lhs.first + rhs.first, lhs.second * rhs.second);
-  };
-  auto mapper = [](auto arg) { return std::make_pair(arg, arg); };
-  mapped_segment_tree<int, decltype(reducer), decltype(mapper)> st(reducer,
-                                                                   mapper);
+  mapped_segment_tree<int, comb_reducer,comb_mapper> st;
   st.reserve(numbers.size());
   for (auto _ : state) {
     st.assign(numbers.begin(), numbers.end());
