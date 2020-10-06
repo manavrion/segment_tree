@@ -75,8 +75,3 @@ install(FILES "cmake/segment_tree-config.cmake"
 
 # Install include
 install(DIRECTORY include/manavrion DESTINATION include)
-
-# export(
-#   TARGETS segment_tree
-#   NAMESPACE manavrion::
-#   FILE segment_tree-targets.cmake)

@@ -1,0 +1,33 @@
+name: cmake_integration_tests_install
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+    # find_package_install
+      - name: Configure segment_tree
+        run: cmake -S . -B .build
+
+      - name: Build segment_tree
+        run: cmake --build .build --parallel 8
+
+      - name: Install segment_tree
+        run: sudo cmake --install .build
+
+      - name: Configure find_package_install
+        run: cmake -S tests/cmake_integration_tests/find_package_install -B .find_package_install_build
+
+      - name: Build find_package_install
+        run: cmake --build .find_package_install_build --parallel 8
