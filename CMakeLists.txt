@@ -32,7 +32,7 @@ endif()
 
 # Library definition
 add_library(segment_tree INTERFACE)
-add_library(segment_tree::segment_tree ALIAS segment_tree)
+add_library(manavrion::segment_tree ALIAS segment_tree)
 target_include_directories(
   segment_tree INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                          $<INSTALL_INTERFACE:include>)

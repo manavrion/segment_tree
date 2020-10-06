@@ -12,4 +12,4 @@ include(segment_tree)
 
 # Binary definition
 add_executable(bin src/test.cc)
-target_link_libraries(bin segment_tree)
+target_link_libraries(bin manavrion::segment_tree)
