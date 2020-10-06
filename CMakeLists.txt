@@ -35,6 +35,7 @@ target_include_directories(
                          $<INSTALL_INTERFACE:include>)
 target_compile_features(segment_tree INTERFACE cxx_std_17)
 
+# Optional targets
 if(SEGMENT_TREE_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif()
@@ -47,6 +48,7 @@ if(SEGMENT_TREE_TESTS)
   add_subdirectory(tests/unittests)
 endif()
 
+# Install
 install(
   TARGETS segment_tree
   EXPORT segment_tree_targets
