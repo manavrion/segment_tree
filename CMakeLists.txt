@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
 
-set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
-export(PACKAGE manavrion)
-
 project(segment_tree LANGUAGES CXX)
 
 # Options
