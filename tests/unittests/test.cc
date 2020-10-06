@@ -7,15 +7,15 @@
 
 #include <memory>
 
+#include "complicated_functor_test.h"
 #include "manavrion/segment_tree/mapped_segment_tree.h"
 #include "manavrion/segment_tree/naive_segment_tree.h"
 #include "manavrion/segment_tree/segment_tree.h"
-#include "manavrion/segment_tree/unittests/complicated_functor_test.h"
-#include "manavrion/segment_tree/unittests/method_test.h"
-#include "manavrion/segment_tree/unittests/random_test.h"
-#include "manavrion/segment_tree/unittests/simple_functor_test.h"
-#include "manavrion/segment_tree/unittests/test_functors.h"
-#include "manavrion/segment_tree/unittests/test_segment_tree.h"
+#include "method_test.h"
+#include "random_test.h"
+#include "simple_functor_test.h"
+#include "test_functors.h"
+#include "test_segment_tree.h"
 
 using namespace manavrion::segment_tree;
 
@@ -24,11 +24,11 @@ using TestSegmentTree =
     test_segment_tree<T, Reducer, Mapper, std::allocator<T>>;
 
 template <typename T, typename Reducer, typename Mapper>
-using NaiveSegmentTree =
-    naive_segment_tree<T, Reducer, std::allocator<T>>;
+using NaiveSegmentTree = naive_segment_tree<T, Reducer, std::allocator<T>>;
 
 template <typename T, typename Reducer, typename Mapper>
-using MappedSegmentTree = mapped_segment_tree<T, Reducer, Mapper, std::allocator<T>>;
+using MappedSegmentTree =
+    mapped_segment_tree<T, Reducer, Mapper, std::allocator<T>>;
 
 template <typename T, typename Reducer, typename Mapper>
 using SegmentTree = segment_tree<T, Reducer, std::allocator<T>>;
@@ -62,8 +62,7 @@ void TestSimpleSegmentTree() {
 // TEST(SegmentTree, Test) { TestSimpleSegmentTree<SegmentTree>(); }
 
 TEST(MappedSegmentTree_Vs_Naive, RandomTest) {
-  RandomTest<mapped_segment_tree<int>,
-             naive_segment_tree<int>>();
+  RandomTest<mapped_segment_tree<int>, naive_segment_tree<int>>();
 }
 
 #if 0

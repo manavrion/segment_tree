@@ -1,7 +1,5 @@
-cmake_minimum_required(VERSION 3.8)
-project(benchmarks)
-
-set(BENCHMARK_FILES build_combined.cc build.cc query_combined.cc query.cc update_combined.cc update.cc)
+set(BENCHMARK_FILES build_combined.cc build.cc query_combined.cc query.cc
+                    update_combined.cc update.cc)
 
 source_group("benchmarks" FILES ${BENCHMARK_FILES})
 

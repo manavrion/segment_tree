@@ -4,7 +4,7 @@
 //
 
 #pragma once
-#include "manavrion/segment_tree/unittests/test_functors.h"
+#include "test_functors.h"
 
 template <template <typename, typename, typename> typename SegmentTree>
 void ComplicatedFunctorTest() {

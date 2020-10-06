@@ -1,2 +1,11 @@
 # Build
 set(CMAKE_BUILD_TYPE Debug)
+
+# Options
+set(SEGMENT_TREE_EXAMPLES
+    ON
+    CACHE BOOL "" FORCE)
+
+set(SEGMENT_TREE_TESTS
+    ON
+    CACHE BOOL "" FORCE)
