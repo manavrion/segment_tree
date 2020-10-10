@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "manavrion/segment_tree/details.h"
-#include "manavrion/segment_tree/functors.h"
 
 namespace manavrion::segment_tree {
 

@@ -4,7 +4,7 @@
 //
 
 #pragma once
-#include "manavrion/segment_tree/functors.h"
+#include "manavrion/segment_tree/details.h"
 
 template <template <typename, typename, typename> typename SegmentTree>
 void SimpleFunctorTest() {
@@ -15,7 +15,7 @@ void SimpleFunctorTest() {
   };
 
   SegmentTree<int, decltype(min),
-              manavrion::segment_tree::functors::default_mapper>
+              manavrion::segment_tree::details::default_mapper>
       st(numbers.begin(), numbers.end(), min);
 
   EXPECT_EQ(st.query(0, 10), 1);
@@ -29,7 +29,7 @@ void SimpleFunctorTest() {
   st.update(1, 7);
 
   SegmentTree<int, decltype(min),
-              manavrion::segment_tree::functors::default_mapper>
+              manavrion::segment_tree::details::default_mapper>
       st2({11, 7, 5, 2, 1, 6, 7, 8, 9, 10}, min);
   EXPECT_EQ(st, st2);
 

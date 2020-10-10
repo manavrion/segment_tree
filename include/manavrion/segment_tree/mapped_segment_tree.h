@@ -13,12 +13,11 @@
 #include <vector>
 
 #include "manavrion/segment_tree/details.h"
-#include "manavrion/segment_tree/functors.h"
 
 namespace manavrion::segment_tree {
 
 template <typename T, typename Reducer = std::plus<T>,
-          typename Mapper = functors::deduce_mapper<T, Reducer>,
+          typename Mapper = details::deduce_mapper<T, Reducer>,
           typename Allocator = std::allocator<T>,
           typename TreeAllocator =
               std::allocator<std::decay_t<std::invoke_result_t<Mapper, T>>>>

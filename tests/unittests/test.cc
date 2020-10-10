@@ -35,7 +35,7 @@ using SegmentTree = segment_tree<T, Reducer, std::allocator<T>>;
 
 template <template <typename, typename, typename> typename S>
 void TestSimpleSegmentTree() {
-  using namespace manavrion::segment_tree::functors;
+  using namespace manavrion::segment_tree::details;
   using SegmentTree = S<int, default_reducer, default_mapper>;
 
   SimpleFunctorTest<S>();

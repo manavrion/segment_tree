@@ -13,12 +13,11 @@
 #include <vector>
 
 #include "manavrion/segment_tree/details.h"
-#include "manavrion/segment_tree/functors.h"
 
 namespace manavrion::segment_tree {
 
-template <typename T, typename Reducer = functors::default_reducer,
-          typename Mapper = functors::deduce_mapper<T, Reducer>,
+template <typename T, typename Reducer = details::default_reducer,
+          typename Mapper = details::deduce_mapper<T, Reducer>,
           typename Allocator = std::allocator<T>>
 class test_segment_tree {
   static_assert(std::is_invocable_v<Mapper, T>);
