@@ -1,4 +1,5 @@
-set(UNITTEST_FILES test.cc)
+set(UNITTEST_FILES complicated_functor_test.cc integration_test.cc lite_test.cc
+                   simple_functor_test.cc)
 
 source_group("unittests" FILES ${UNITTEST_FILES})
 

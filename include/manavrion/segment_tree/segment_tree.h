@@ -89,7 +89,6 @@ class segment_tree : private Reducer {
 
   // Creates segment tree nodes, time complexity - O(n).
   void build_tree() {
-    assert(!tree_.empty());
     const size_t tree_size = tree_.size();
     const auto& reduce = reducer();
 
@@ -493,7 +492,8 @@ bool operator!=(const segment_tree<T1, R, A>& lhs,
 template <typename T1, typename T2, typename R, typename A>
 bool operator<(const segment_tree<T1, R, A>& lhs,
                const segment_tree<T2, R, A>& rhs) {
-  return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+  return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(),
+                                      rhs.end());
 }
 
 template <typename T1, typename T2, typename R, typename A>

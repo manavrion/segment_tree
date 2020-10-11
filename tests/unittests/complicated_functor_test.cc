@@ -3,14 +3,42 @@
 // This file is part of the segment_tree header-only library.
 //
 
-#pragma once
-#include "test_functors.h"
+#include <gtest/gtest.h>
 
-template <template <typename, typename, typename> typename SegmentTree>
+#include <random>
+
+#include "manavrion/segment_tree/mapped_segment_tree.h"
+
+using namespace manavrion::segment_tree;
+
+namespace {
+
+struct reduce_result_t {
+  int min;
+  int max;
+  int sum;
+  int mul;
+};
+
+struct test_mapper {
+  auto operator()(const int val) const noexcept {
+    return reduce_result_t{val, val, val, val};
+  }
+};
+
+struct test_reducer {
+  auto operator()(const reduce_result_t& lhs,
+                  const reduce_result_t& rhs) const noexcept {
+    return reduce_result_t{std::min(lhs.min, rhs.min),
+                           std::max(lhs.max, rhs.max), lhs.sum + rhs.sum,
+                           lhs.mul * rhs.mul};
+  }
+};
+
+template <typename SegmentTree>
 void ComplicatedFunctorTest() {
   const std::vector numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  SegmentTree<int, test_reducer<int>, test_mapper<int>> st(numbers.begin(),
-                                                           numbers.end());
+  SegmentTree st(numbers.begin(), numbers.end());
   auto r1 = st.query(0, 10);
   EXPECT_EQ(r1.min, 1);
   EXPECT_EQ(r1.max, 10);
@@ -75,4 +103,10 @@ void ComplicatedFunctorTest() {
   EXPECT_EQ(r9.max, 4);
   EXPECT_EQ(r9.sum, 14);
   EXPECT_EQ(r9.mul, 144);
+}
+
+}  // namespace
+
+TEST(ComplicatedFunctorTest, ComplicatedFunctorTest) {
+  ComplicatedFunctorTest<mapped_segment_tree<int, test_reducer, test_mapper>>();
 }
