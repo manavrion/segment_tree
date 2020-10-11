@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
+     <loc>https://manavrion.github.io/segment_tree/</loc>
+     <lastmod>2020-10-11</lastmod>
+     <changefreq>daily</changefreq>
+    </url><url>
+     <loc>https://manavrion.github.io/segment_tree/examples/examples/</loc>
+     <lastmod>2020-10-11</lastmod>
+     <changefreq>daily</changefreq>
+    </url><url>
+     <loc>https://manavrion.github.io/segment_tree/paper/tree/</loc>
+     <lastmod>2020-10-11</lastmod>
+     <changefreq>daily</changefreq>
+    </url><url>
+     <loc>https://manavrion.github.io/segment_tree/paper/traversing/</loc>
+     <lastmod>2020-10-11</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+</urlset>
